@@ -1,0 +1,7 @@
+# Dev/test-only dependencies (not needed in production).
+# Install with:  pip install -r requirements-dev.txt
+# Assumes requirements.txt is already installed (fastapi/sqlalchemy/pyodbc...).
+# ASCII-only on purpose (pip reads this with the OS locale codec).
+
+pytest==8.2.0             # test runner
+httpx==0.27.0             # required by fastapi.testclient.TestClient (starlette)

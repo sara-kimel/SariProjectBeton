@@ -1,0 +1,21 @@
+# Runtime dependencies for the Beton server.
+# (Kept ASCII-only: pip decodes this file with the OS locale codec, which is
+#  cp1255 on this machine and cannot read non-ASCII comments.)
+
+fastapi==0.110.0          # web framework
+uvicorn==0.27.1           # ASGI server
+sqlalchemy==2.0.27        # ORM
+pyodbc==5.1.0             # SQL Server driver
+pydantic==2.6.1           # validation / DTOs
+python-dotenv==1.0.1      # load .env settings
+
+# The matching engine uses an R-tree for the geo pre-filter
+# (`from rtree import index`). rtree needs the native libspatialindex library;
+# on Windows the rtree wheel bundles the binary, so `pip install rtree` is
+# enough (no separate install). If loading fails (OSError about
+# libspatialindex), ensure the wheel matches the Python version.
+rtree>=1.3.0              # R-tree index for the geo matching engine
+
+# Auth (phase 1)
+bcrypt==4.2.0            # password hashing (used directly, no passlib)
+PyJWT==2.9.0             # JWT access tokens (HS256)

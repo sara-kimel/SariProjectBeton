@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>פרויקט שרי — Beton | איפיון מערכת מלא</title>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body {
+  font-family: "Segoe UI", "Assistant", Arial, sans-serif;
+  direction: rtl; text-align: right;
+  max-width: 900px; margin: 0 auto; padding: 40px 28px 80px;
+  color: #1f2933; line-height: 1.7; background: #fff; font-size: 16px;
+}
+h1 { font-size: 2em; border-bottom: 3px solid #2563eb; padding-bottom: .3em; margin-top: 1.4em; }
+h2 { font-size: 1.5em; border-bottom: 1px solid #d0d7de; padding-bottom: .25em; margin-top: 1.8em; color: #1d4ed8; }
+h3 { font-size: 1.2em; margin-top: 1.4em; color: #334155; }
+a { color: #2563eb; text-decoration: none; }
+a:hover { text-decoration: underline; }
+p { margin: .7em 0; }
+code { background: #f1f5f9; padding: .12em .4em; border-radius: 4px; font-size: .9em;
+  font-family: "Consolas", "Courier New", monospace; direction: ltr; unicode-bidi: embed; display: inline-block; }
+pre { background: #0f172a; color: #e2e8f0; padding: 16px 18px; border-radius: 8px;
+  overflow-x: auto; direction: ltr; text-align: left; line-height: 1.45; }
+pre code { background: none; color: inherit; padding: 0; font-size: .86em; }
+blockquote { border-right: 4px solid #f59e0b; background: #fffbeb; margin: 1em 0;
+  padding: .6em 1em; border-radius: 4px; color: #713f12; }
+.table-wrap { overflow-x: auto; margin: 1em 0; }
+table { border-collapse: collapse; width: 100%; font-size: .95em; }
+th, td { border: 1px solid #d0d7de; padding: 8px 12px; text-align: right; vertical-align: top; }
+th { background: #eff6ff; font-weight: 700; }
+tr:nth-child(even) td { background: #f8fafc; }
+hr { border: none; border-top: 1px solid #e2e8f0; margin: 2em 0; }
+ul, ol { padding-right: 1.5em; margin: .6em 0; }
+li { margin: .3em 0; }
+ul ul { margin: .2em 0; }
+@media print {
+  body { max-width: none; padding: 0; font-size: 12px; }
+  h2 { page-break-before: auto; }
+  pre { white-space: pre-wrap; word-break: break-word; }
+  a { color: #1f2933; }
+}
+</style>
+</head>
+<body>
+<h1 id="פרויקט-שרי--beton--איפיון-מערכת-מלא">פרויקט שרי — "Beton" | איפיון מערכת מלא</h1>
+<blockquote>מסמך אפיון פונקציונלי וטכני. נגזר מהקוד הקיים בצד השרת + החלטות מוצר שאושרו. סטטוס: <strong>טיוטה ראשונה לאישור</strong>. סעיף <a href="#16-החלטות-פתוחות-לאישור">16 — החלטות פתוחות</a> מרכז את מה שדורש אישור/דיוק ממך.</blockquote>
+<hr>
+<h2 id="תוכן-עניינים">תוכן עניינים</h2>
+<ol><li><a href="#1-סקירה-כללית-וחזון">סקירה כללית וחזון</a></li><li><a href="#2-תפקידים-ומשתמשים">תפקידים ומשתמשים</a></li><li><a href="#3-מושגי-יסוד-ומילון-מונחים">מושגי יסוד ומילון מונחים</a></li><li><a href="#4-הזרימה-המרכזית-end-to-end">הזרימה המרכזית (End-to-End)</a></li><li><a href="#5-מנוע-ההתאמה--לב-המערכת">מנוע ההתאמה — לב המערכת</a></li><li><a href="#6-מכונות-מצב-lifecycle">מכונות מצב (Lifecycle)</a></li><li><a href="#7-מודל-הנתונים-db">מודל הנתונים (DB)</a></li><li><a href="#8-שכבת-ה-api-צד-שרת">שכבת ה-API (צד שרת)</a></li><li><a href="#9-ארכיטקטורת-צד-שרת">ארכיטקטורת צד שרת</a></li><li><a href="#10-אבטחה-אימות-והרשאות">אבטחה, אימות והרשאות</a></li><li><a href="#11-מערכת-ההתראות">מערכת ההתראות</a></li><li><a href="#12-צד-לקוח-client">צד לקוח (Client)</a></li><li><a href="#13-מקרי-קצה--מקיף">מקרי קצה — מקיף</a></li><li><a href="#14-פערים-מהמצב-הקיים-ורשימת-ניקוי">פערים מהמצב הקיים ורשימת ניקוי</a></li><li><a href="#15-מפת-דרכים--שלבי-פיתוח">מפת דרכים / שלבי פיתוח</a></li><li><a href="#16-החלטות-פתוחות-לאישור">החלטות פתוחות לאישור</a></li><li><a href="#17-המלצות-נוספות-מה-עוד-כדאי-להוסיף">המלצות נוספות (מה עוד כדאי להוסיף)</a></li></ol>
+<hr>
+<h2 id="1-סקירה-כללית-וחזון">1. סקירה כללית וחזון</h2>
+<p><strong>הבעיה:</strong> בטון מוכן הוא מוצר מתכלה — לאחר יציקה נותרות לעיתים שאריות במערבל שחייבות להישפך תוך שעות ספורות אחרת הן מתקשות והופכות לפסולת. במקביל, קיימים לקוחות פרטיים/קטנים שצריכים <strong>כמות קטנה</strong> של בטון (גדר, יסוד קטן, רצפה) — כמות קטנה מדי מכדי להצדיק הזמנת מערבל שלם ממפעל.</p>
+<p><strong>הפתרון:</strong> פלטפורמת תיווך שמחברת בזמן אמת בין <strong>קבלן</strong> עם שארית בטון זמינה לבין <strong>לקוחות ממתינים</strong> בקרבת מקום שהצורך שלהם תואם את השארית.</p>
+<p><strong>מודל עסקי (אושר):</strong> תיווך בלבד. המערכת מציגה מחיר ומחברת בין הצדדים; התשלום מתבצע ישירות בין קבלן ללקוח מחוץ למערכת. אין סליקה ב-MVP.</p>
+<p><strong>עקרון מפתח (אושר, תואם לקוד הקיים):</strong></p>
+<blockquote>הלקוח מזין בקשה ונכנס לרשימת המתנה. <strong>המנוע מופעל רק כאשר קבלן מזין פנייה</strong> — ואז הוא מחפש בקשות לקוחות ממתינות התואמות לפנייה של הקבלן. לקוח שממתין הוא פסיבי עד שמגיעה פנייה תואמת.</blockquote>
+<hr>
+<h2 id="2-תפקידים-ומשתמשים">2. תפקידים ומשתמשים</h2>
+<div class="table-wrap"><table><thead><tr><th>תפקיד</th><th>תיאור</th><th>פעולות עיקריות</th></tr></thead><tbody><tr><td><strong>לקוח</strong> (Customer)</td><td>צריך כמות קטנה של בטון</td><td>הרשמה/התחברות, יצירת בקשה, המתנה, קבלת התראה על התאמה, אישור/דחייה, צפייה בפרטי הקבלן לאחר סגירה</td></tr><tr><td><strong>קבלן</strong> (Contractor)</td><td>בעל שאריות בטון</td><td>הרשמה/התחברות, הזנת פנייה (סוג/כמות/מחיר/מיקום/תפוגה), הפעלת המנוע, צפייה בלקוחות שהותאמו, קבלת התראה מי אישר, צפייה בפרטי הלקוח</td></tr><tr><td><strong>מנהל</strong> (Admin)</td><td>תחזוקת המערכת</td><td>ניהול טבלאות ה-lookup (מטרות, חוזק, סומך, גודל אבן, סוגי בטון), צפייה במשתמשים/סטטיסטיקות, ניהול תוכן</td></tr></tbody></table></div>
+<p>הערה: זהו תפקיד לוגי. משתמש בודד יכול עקרונית להיות גם לקוח וגם קבלן — ראה <a href="#16-החלטות-פתוחות-לאישור">החלטה OD-8</a>.</p>
+<hr>
+<h2 id="3-מושגי-יסוד-ומילון-מונחים">3. מושגי יסוד ומילון מונחים</h2>
+<div class="table-wrap"><table><thead><tr><th>מונח</th><th>פירוש</th><th>ישות ב-DB</th></tr></thead><tbody><tr><td><strong>בקשת לקוח</strong></td><td>בקשה של לקוח לקבל בטון (מטרה, כמות, מיקום)</td><td><code>ConcreteRequests</code></td></tr><tr><td><strong>פניית קבלן / הצעה</strong></td><td>פנייה של קבלן עם שארית בטון (סוג, כמות, מחיר, תפוגה, מיקום)</td><td><code>ContractorConcreteRequests</code></td></tr><tr><td><strong>סוג בטון</strong></td><td>צירוף של חוזק + סומך + גודל אבן + מטרה</td><td><code>Concrete_type</code></td></tr><tr><td><strong>מטרה</strong></td><td>ייעוד השימוש בבטון (יסודות, רצפה, גדר...)</td><td><code>Purpose</code></td></tr><tr><td><strong>חוזק</strong></td><td>דרגת חוזק (ב-20, ב-30...)</td><td><code>Strength</code></td></tr><tr><td><strong>סומך</strong></td><td>מידת נזילות/עבידות הבטון (slump)</td><td><code>Reliant</code></td></tr><tr><td><strong>גודל אבן</strong></td><td>גודל האגרגט בתערובת</td><td><code>Stone_size</code></td></tr><tr><td><strong>התאמה</strong></td><td>קשר בין פנייה לבקשה שהמנוע יצר</td><td><code>OfferMatches</code> (חדש)</td></tr><tr><td><strong>רשימת המתנה</strong></td><td>כלל בקשות הלקוחות בסטטוס "ממתין"</td><td>תצוגה על <code>ConcreteRequests</code></td></tr></tbody></table></div>
+<hr>
+<h2 id="4-הזרימה-המרכזית-end-to-end">4. הזרימה המרכזית (End-to-End)</h2>
+<pre><code>לקוח                          מערכת                         קבלן
+ │                              │                             │
+ │─ הרשמה/התחברות ──────────────►                             │
+ │─ יצירת בקשה (מטרה,כמות,מיקום)─► ConcreteRequest(status=OPEN)│
+ │                              │  ◄── נכנס לרשימת המתנה       │
+ │      (ממתין, פסיבי)          │                             │
+ │                              │        ◄─── התחברות ─────────│
+ │                              │  ◄─── הזנת פנייה ────────────│  (סוג,כמות,מחיר,תפוגה,מיקום)
+ │                              │                             │
+ │                              ▼  🔴 המנוע מופעל כאן
+ │                        ┌──────────────────────┐
+ │                        │ 1. סינון גיאוגרפי     │  (רדיוס, R-tree, Haversine)
+ │                        │ 2. סינון לפי מטרה     │  (Purpose של סוג הבטון)
+ │                        │ 3. סינון לפי כמות     │  (90%–100% מכמות הפנייה)
+ │                        │ 4. דירוג לפי ניקוד    │  (ימי המתנה − זמן נסיעה)
+ │                        └──────────┬───────────┘
+ │                                   ▼
+ │◄── התראה: "נמצאה שארית מתאימה!" ── OfferMatches(status=NOTIFIED)
+ │                                   │
+ │─ אישור ההצעה ─────────────────────► (הראשון שמאשר זוכה)
+ │                                   ▼
+ │                        Offer.status=CLOSED, Request.status=CLOSED
+ │                        Match.status=ACCEPTED
+ │◄─ פרטי הקבלן (טלפון) ──            ──► התראה לקבלן: "לקוח X אישר" + פרטי הלקוח
+ │                                   │
+ │           לקוחות אחרים שהותאמו ◄── התראה: "ההצעה כבר נתפסה"</code></pre>
+<p><strong>נקודות מפתח בזרימה:</strong></p>
+<ul><li>✅ (OD-6) הזנת בקשה ע"י לקוח <strong>גם היא מפעילה</strong> את המנוע בכיוון ההפוך — סריקת פניות פתוחות קיימות והתראה מיידית ללקוח אם נמצאה התאמה. המנוע דו-כיווני. (בפועל, כיוון פניית הקבלן נשאר העיקרי, כי הפניות מתכלות.)</li><li>הפעלת המנוע נעשית <strong>סינכרונית</strong> בעת הזנת פנייה, ומחזירה לקבלן את רשימת הלקוחות שהותאמו.</li><li>שליחת ההתראות ואישור הלקוח מתרחשים <strong>א-סינכרונית</strong> לאחר מכן.</li></ul>
+<hr>
+<h2 id="5-מנוע-ההתאמה--לב-המערכת">5. מנוע ההתאמה — לב המערכת</h2>
+<p>מבוסס על הקוד הקיים ב-<code>service/matching_engine_service.py</code> + <code>service/contractor_matching_controller.py</code>. להלן האיפיון המחייב (כולל תיקונים לבאגים שאותרו).</p>
+<h3 id="51-קלט-וכיווניות">5.1 קלט וכיווניות</h3>
+<p>המנוע <strong>דו-כיווני</strong> (OD-6) ורץ בשני טריגרים:</p>
+<ul><li><strong>טריגר A (עיקרי) — פניית קבלן:</strong> קלט <code>{ lat, lng, concrete_id, quantity, ... }</code> → מוצא <strong>בקשות לקוחות</strong> ממתינות ותואמות.</li><li><strong>טריגר B — בקשת לקוח חדשה:</strong> קלט <code>{ lat, lng, purpose_id, quantity }</code> → מוצא <strong>פניות קבלנים</strong> פתוחות (שלא פגו) ותואמות.</li></ul>
+<p>שני הכיוונים חולקים את אותם שלבי סינון (גיאו → מטרה/מפרט → כמות) ואת אותה טבלת <code>OfferMatches</code>. התיאור להלן מנוסח לטריגר A; טריגר B סימטרי (ראה <a href="#56-טריגר-הפוך-בקשת-לקוח-חדשה">5.6</a>).</p>
+<h3 id="52-שלבי-הצינור-pipeline">5.2 שלבי הצינור (Pipeline)</h3>
+<p><strong>שלב 0 — טעינת מועמדים.</strong> נטענות כל בקשות הלקוחות שסטטוסן <strong>OPEN</strong> בלבד. (תיקון: כיום נטענות *כל* הבקשות ל-R-tree והסינון לפי סטטוס קורה בתוך הלולאה — לא יעיל. יש לסנן <code>status = OPEN</code> כבר בשאילתה.)</p>
+<p><strong>שלב 1 — סינון גיאוגרפי.</strong></p>
+<ul><li>אינדקס מרחבי (R-tree) על (lng, lat) של הבקשות.</li><li>תיבה חוסמת: <code>delta = radius_meters / 111000</code> סביב נקודת הקבלן → שליפת מועמדים ראשונית.</li><li>לכל מועמד: חישוב מרחק מדויק ב-<strong>Haversine</strong>; פסילה אם <code>dist &gt; radius_meters</code>.</li><li>רדיוס ברירת מחדל: <strong>10,000 מ'</strong>. ✅ (OD-9) הרדיוס ומשקלי הניקוד הם <strong>קבועים בקובץ קונפיג</strong> (ניתנים לכיוונון בקוד, לא חשופים למשתמש).</li></ul>
+<p><strong>שלב 2 — סינון לפי מטרה→מפרט.</strong> ✅ (OD-2)</p>
+<ul><li>הלקוח בוחר <strong>מטרה</strong> בלבד; המערכת <strong>גוזרת ממנה את מפרט הבטון הנדרש</strong> (חוזק/סומך/גודל אבן) לפי מיפוי שמנוהל ע"י המנהל (שדות <code>req_*</code> בטבלת <code>Purpose</code>).</li><li>נשמרות בקשות שהפנייה של הקבלן <strong>עומדת במפרט הנגזר</strong> של מטרת הבקשה:</li><ul><li><strong>חוזק:</strong> <code>offer.strength.sort_order ≥ req_strength.sort_order</code> (בטון חזק יותר מתאים גם לדרישה חלשה יותר).</li><li><strong>סומך / גודל אבן:</strong> שווים לנדרש אם המטרה מגדירה אותם; אחרת לא מסננים.</li></ul><li>אם למטרה אין מיפוי מפרט — נפילה חיננית ל<strong>התאמה לפי מטרה בלבד</strong> (<code>request.purpose_id == offer.concrete_type.Purpose_id</code>), כמו במנוע הקיים.</li></ul>
+<p><strong>שלב 3 — סינון לפי כמות.</strong></p>
+<ul><li><code>min_qty = 0.9 × offer.quantity</code>, <code>max_qty = offer.quantity</code>.</li><li>נשמרות בקשות עם <code>min_qty ≤ request.quantity ≤ max_qty</code>.</li><li>כלומר הלקוח צריך כמות שקטנה או שווה לשארית, אך לא פחות מ-90% ממנה (מזעור בזבוז). ✅ <strong>הוכרע (OD-4): נשאר 90%–100%</strong> — המודל הוא שלקוח יחיד לוקח כמעט את כל השארית; לקוח שצריך כמות קטנה בהרבה מהשארית לא יותאם, וזה מכוון.</li></ul>
+<p><strong>שלב 4 — דירוג (Scoring).</strong></p>
+<pre><code>waiting_days  = today − request.date            # מס' ימים שהבקשה ממתינה
+travel_minutes = (dist_m / 1000) × 2            # הערכה גסה: 2 דק' לק"מ
+score = (w1 × waiting_days) − (w2 × travel_minutes)   # w1=5, w2=1</code></pre>
+<p>מיון יורד לפי <code>score</code> — בקשות ותיקות וקרובות מקבלות עדיפות.</p>
+<h3 id="53-פלט">5.3 פלט</h3>
+<p>רשימת מועמדים ממוינת, כל אחד עם <code>{ request_id, customer_id, distance_m, waiting_days, score, ... }</code>.</p>
+<h3 id="54-מה-קורה-עם-הפלט-חסר-כיום--יש-לממש">5.4 מה קורה עם הפלט (חסר כיום — יש לממש)</h3>
+<ol><li><strong>שמירת הפנייה</strong> ב-DB (כיום <code>POST /send/</code> לא שומר כלל!).</li><li>יצירת רשומות <code>OfferMatches</code> לכל מועמד (status=NOTIFIED).</li><li>שליחת התראות בתוך-אפליקציה ללקוחות שהותאמו, לפי סדר הדירוג. ✅ (OD-5) <strong>broadcast לכל המותאמים בו-זמנית, והראשון שמאשר זוכה</strong> (מתאים למוצר מתכלה בלחץ זמן); היתר מקבלים "כבר נתפסה".</li><li>החזרת סיכום לקבלן.</li></ol>
+<h3 id="55-שיקולי-ביצועים">5.5 שיקולי ביצועים</h3>
+<ul><li>✅ (OD-10) המימוש נשאר <strong>R-tree ב-Python</strong> ל-MVP (פשוט, מתאים לנפח קטן/בינוני). כיום <code>load_data()</code> בונה R-tree מחדש בכל ריצה — תקין לנפחים קטנים; להגדלה עתידית לשקול אינדקס מתמיד/קאשינג או <code>geography</code>+SP ב-SQL Server (קיים שלד <code>GetCandidateRequests</code>).</li></ul>
+<h3 id="56-טריגר-הפוך-בקשת-לקוח-חדשה">5.6 טריגר הפוך: בקשת לקוח חדשה</h3>
+<p>כאשר לקוח יוצר בקשה (<code>POST /concrete-requests/</code>), לאחר השמירה (status=OPEN) רץ המנוע בכיוון ההפוך (OD-6):</p>
+<ol><li><strong>סינון גיאוגרפי</strong> — פניות קבלנים בסטטוס OPEN ושלא פג <code>expiry_time</code>, בתוך הרדיוס ממיקום הבקשה.</li><li><strong>מטרה→מפרט</strong> — הפנייה עומדת במפרט הנגזר ממטרת הבקשה (כמו שלב 2).</li><li><strong>כמות</strong> — <code>request.qty ∈ [0.9 × offer.qty, offer.qty]</code> (אותו כלל, לכל פנייה).</li><li>לכל פנייה תואמת נוצרת רשומת <code>OfferMatches</code> (NOTIFIED) ונשלחת התראה <strong>ללקוח</strong> ("נמצאה פנייה מתאימה"); הלקוח יכול לאשר מיד.</li></ol>
+<p>הערה: זהו הכיוון המשלים — הוא מכסה מצב שבו כבר קיימות פניות פתוחות כשהלקוח נכנס. בפועל, בגלל שהפניות מתכלות (תפוגה בשעות), הטריגר העיקרי יישאר פניית הקבלן.</p>
+<hr>
+<h2 id="6-מכונות-מצב-lifecycle">6. מכונות מצב (Lifecycle)</h2>
+<h3 id="61-בקשת-לקוח-concreterequestsstatus">6.1 בקשת לקוח (<code>ConcreteRequests.status</code>)</h3>
+<pre><code>OPEN ──(לקוח אישר פנייה)──► CLOSED
+  │
+  └──(הלקוח ביטל)──────────► CANCELLED</code></pre>
+<ul><li><strong>OPEN</strong> — ממתין, זמין להתאמה. ברירת מחדל ביצירה.</li><li><strong>CLOSED</strong> — הלקוח אישר פנייה ונסגרה עסקה.</li><li><strong>CANCELLED</strong> — הלקוח ביטל ידנית.</li><li>✅ (OD-7) <strong>אין תפוגה אוטומטית לבקשה</strong> — היא ממתינה עד שנסגרת (אישור) או מבוטלת.</li></ul>
+<blockquote>תיקון קונספטואלי: כיום המנוע מזהה "פתוח" לפי <code>status IS NULL</code>. יש להחליף לשדה סטטוס מפורש עם ברירת מחדל <code>OPEN</code>, והמנוע יסנן <code>status = OPEN</code>.</blockquote>
+<h3 id="62-פניית-קבלן-contractorconcreterequestsstatus--עמודה-חדשה">6.2 פניית קבלן (<code>ContractorConcreteRequests.status</code> — עמודה חדשה)</h3>
+<pre><code>OPEN ──(לקוח כלשהו אישר)──► CLOSED
+  │
+  ├──(פג expiry_time)──────► EXPIRED
+  └──(הקבלן ביטל)──────────► CANCELLED</code></pre>
+<h3 id="63-התאמה-offermatchesstatus--טבלה-חדשה">6.3 התאמה (<code>OfferMatches.status</code> — טבלה חדשה)</h3>
+<pre><code>NOTIFIED ──(הלקוח אישר)────► ACCEPTED
+   │
+   ├──(הלקוח דחה)───────────► DECLINED
+   ├──(לקוח אחר אישר קודם)──► SUPERSEDED
+   └──(הפנייה פגה)──────────► EXPIRED</code></pre>
+<hr>
+<h2 id="7-מודל-הנתונים-db">7. מודל הנתונים (DB)</h2>
+<p>מסד: <strong>SQL Server</strong>, DB בשם <code>beton</code>. הסכימה הקיימת ב-<code>server/db/schema.sql</code> (9 טבלאות). להלן הטבלאות + <strong>השינויים הנדרשים</strong> (מסומנים 🔧 = שינוי, ➕ = חדש).</p>
+<h3 id="71-טבלאות-קיימות-עם-תיקונים">7.1 טבלאות קיימות (עם תיקונים)</h3>
+<p><strong>Customers</strong> (id החל מ-100)</p>
+<div class="table-wrap"><table><thead><tr><th>עמודה</th><th>טיפוס</th><th>הערות</th></tr></thead><tbody><tr><td>id</td><td>INT IDENTITY PK</td><td></td></tr><tr><td>first_name, last_name</td><td>NVARCHAR</td><td></td></tr><tr><td>user_name</td><td>NVARCHAR(50) 🔧</td><td><strong>UNIQUE</strong> 🔧, נדרש לאימות</td></tr><tr><td>password</td><td>—</td><td>🔧 <strong>להסיר</strong>; להחליף ל-<code>password_hash</code></td></tr><tr><td>password_hash ➕</td><td>NVARCHAR(255)</td><td>bcrypt/argon2</td></tr><tr><td>phone</td><td>NVARCHAR(20)</td><td></td></tr><tr><td>created_at ➕</td><td>DATETIME2 DEFAULT SYSDATETIME()</td><td></td></tr></tbody></table></div>
+<p><strong>Contractors</strong> (id החל מ-300) — אותם שינויים כמו Customers (user_name UNIQUE, password_hash, created_at).</p>
+<p>➕ <strong>Admins</strong> — טבלת מנהלים (או <code>is_admin</code> על טבלה מאוחדת; ראה <a href="#16-החלטות-פתוחות-לאישור">OD-8</a>).</p>
+<p><strong>טבלאות lookup</strong> — <code>Strength</code> (1100), <code>Reliant</code> (1200), <code>Stone_size</code> (1300), <code>Purpose</code> (1400): <strong>חובה לזרוע נתונים</strong> (seed) — כיום ריקות, ולכן המנוע לא ימצא התאמות. ➕ seed script. שינויים ל-OD-2 (מטרה→מפרט):</p>
+<ul><li><code>Strength</code> ➕ <code>sort_order INT</code> — לסדר חוזקים להשוואת <code>≥</code> (B-20 &lt; B-30 &lt; B-40).</li><li><code>Purpose</code> ➕ <code>req_strength_id</code>, <code>req_reliant_id</code>, <code>req_stone_size_id</code> (FK nullable) — המפרט הנגזר לכל מטרה, מנוהל ע"י המנהל. אם NULL → נפילה להתאמה לפי מטרה בלבד.</li></ul>
+<p><strong>Concrete_type</strong> (id החל מ-2000) — צירוף <code>strength_id + Reliant_id + Stone_size_id + Purpose_id</code>. ללא שינוי מבני; דורש seed + ניהול ע"י מנהל.</p>
+<p><strong>ConcreteRequests</strong> (request_id החל מ-200)</p>
+<div class="table-wrap"><table><thead><tr><th>עמודה</th><th>טיפוס</th><th>הערות</th></tr></thead><tbody><tr><td>request_id</td><td>INT IDENTITY PK</td><td></td></tr><tr><td>customer_id</td><td>INT FK→Customers</td><td>🔧 להפוך ל-<code>NOT NULL</code> (בקשה חייבת לקוח לאחר אימות)</td></tr><tr><td>purpose_id</td><td>INT FK→Purpose</td><td></td></tr><tr><td>quantity</td><td>DECIMAL(6,2)</td><td>מ"ק</td></tr><tr><td>address</td><td>NVARCHAR(255)</td><td></td></tr><tr><td>lat, lng</td><td>DECIMAL(9,6) NOT NULL</td><td></td></tr><tr><td>date</td><td>DATE DEFAULT GETDATE()</td><td>תאריך יצירה (משמש לדירוג)</td></tr><tr><td><strong>status</strong> 🔧</td><td>NVARCHAR(20) / TINYINT</td><td>ערכי enum: OPEN/CLOSED/CANCELLED, ברירת מחדל <strong>OPEN</strong> (אין EXPIRED — OD-7). מחליף את הבלבול הקיים DECIMAL/NULL</td></tr><tr><td>region</td><td>—</td><td>✅ (OD-3) <strong>להסיר</strong> מה-DTO (<code>match_response_dto</code>); ההתאמה מסתמכת על מרחק גיאוגרפי, לא על אזור טקסטואלי</td></tr></tbody></table></div>
+<p><strong>ContractorConcreteRequests</strong> (request_id החל מ-600)</p>
+<div class="table-wrap"><table><thead><tr><th>עמודה</th><th>טיפוס</th><th>הערות</th></tr></thead><tbody><tr><td>request_id</td><td>INT IDENTITY PK</td><td>מזהה הפנייה</td></tr><tr><td>concrete_id</td><td>INT FK→Concrete_type</td><td></td></tr><tr><td>contractor_id</td><td>INT FK→Contractors</td><td></td></tr><tr><td>quantity</td><td>DECIMAL(6,2)</td><td></td></tr><tr><td>address</td><td>NVARCHAR(255)</td><td></td></tr><tr><td>lat, lng</td><td>DECIMAL(9,6)</td><td>🔧 להפוך ל-<code>NOT NULL</code> (המנוע מחייב מיקום)</td></tr><tr><td>expiry_time</td><td>DATETIME</td><td>זמן תפוגת ההצעה</td></tr><tr><td>price</td><td>NVARCHAR(100)</td><td>מחיר להצגה ללקוח</td></tr><tr><td>id_customer</td><td>INT FK→ConcreteRequests</td><td>🔧 שם מבלבל; לשנות ל-<code>accepted_request_id</code> — הבקשה שאישרה</td></tr><tr><td><strong>status</strong> ➕</td><td>NVARCHAR(20)</td><td>OPEN/CLOSED/EXPIRED/CANCELLED, ברירת מחדל OPEN</td></tr><tr><td>created_at ➕</td><td>DATETIME2</td><td></td></tr></tbody></table></div>
+<h3 id="72-טבלאות-חדשות-">7.2 טבלאות חדשות ➕</h3>
+<p><strong>OfferMatches</strong> — רשומת התאמה בין פנייה לבקשה (גם בסיס ל"מי הותאם" ו"מי אישר").</p>
+<div class="table-wrap"><table><thead><tr><th>עמודה</th><th>טיפוס</th><th>הערות</th></tr></thead><tbody><tr><td>id</td><td>INT IDENTITY PK</td><td></td></tr><tr><td>offer_id</td><td>INT FK→ContractorConcreteRequests</td><td></td></tr><tr><td>request_id</td><td>INT FK→ConcreteRequests</td><td></td></tr><tr><td>customer_id</td><td>INT FK→Customers</td><td>דנורמליזציה לנוחות</td></tr><tr><td>score</td><td>DECIMAL</td><td>ניקוד מהמנוע</td></tr><tr><td>distance_m</td><td>DECIMAL</td><td>מרחק במטרים</td></tr><tr><td>status</td><td>NVARCHAR(20)</td><td>NOTIFIED/ACCEPTED/DECLINED/SUPERSEDED/EXPIRED</td></tr><tr><td>created_at</td><td>DATETIME2</td><td></td></tr><tr><td>responded_at</td><td>DATETIME2 NULL</td><td>מתי הלקוח הגיב</td></tr><tr><td></td><td></td><td>UNIQUE(offer_id, request_id)</td></tr></tbody></table></div>
+<p><strong>Notifications</strong> — מרכז ההתראות בתוך-אפליקציה (לכל התפקידים).</p>
+<div class="table-wrap"><table><thead><tr><th>עמודה</th><th>טיפוס</th><th>הערות</th></tr></thead><tbody><tr><td>id</td><td>INT IDENTITY PK</td><td></td></tr><tr><td>user_id</td><td>INT</td><td></td></tr><tr><td>user_role</td><td>NVARCHAR(20)</td><td>customer/contractor/admin</td></tr><tr><td>type</td><td>NVARCHAR(40)</td><td>MATCH_FOUND / OFFER_TAKEN / CUSTOMER_ACCEPTED / OFFER_EXPIRED...</td></tr><tr><td>title, body</td><td>NVARCHAR</td><td>תוכן להצגה</td></tr><tr><td>related_offer_id, related_request_id</td><td>INT NULL</td><td>קישור לישות</td></tr><tr><td>is_read</td><td>BIT DEFAULT 0</td><td></td></tr><tr><td>created_at</td><td>DATETIME2</td><td></td></tr></tbody></table></div>
+<blockquote>אפשר לאחד את <code>OfferMatches</code> ו-<code>Notifications</code> בעתיד; לבהירות ב-MVP הם נפרדים — Matches מנהל מצב התאמה, Notifications מנהל את תיבת ההתראות.</blockquote>
+<h3 id="73-דיאגרמת-ישויות-טקסטואלית">7.3 דיאגרמת ישויות (טקסטואלית)</h3>
+<pre><code>Customers ──&lt; ConcreteRequests &gt;── Purpose
+Contractors ──&lt; ContractorConcreteRequests &gt;── Concrete_type ──&lt; Strength/Reliant/Stone_size/Purpose
+ConcreteRequests ──&lt; OfferMatches &gt;── ContractorConcreteRequests
+Users(all) ──&lt; Notifications</code></pre>
+<hr>
+<h2 id="8-שכבת-ה-api-צד-שרת">8. שכבת ה-API (צד שרת)</h2>
+<p>בסיס: FastAPI, פורט 8001. כל הנתיבים תחת CORS. Response models = DTOs. להלן ה-endpoints הנדרשים (✅ קיים, 🔧 לתיקון, ➕ חדש).</p>
+<h3 id="81-אימות-">8.1 אימות ➕</h3>
+<div class="table-wrap"><table><thead><tr><th>Method</th><th>Path</th><th>תיאור</th></tr></thead><tbody><tr><td>POST</td><td><code>/auth/register/customer</code></td><td>הרשמת לקוח</td></tr><tr><td>POST</td><td><code>/auth/register/contractor</code></td><td>הרשמת קבלן</td></tr><tr><td>POST</td><td><code>/auth/login</code></td><td>התחברות → מחזיר JWT + role</td></tr><tr><td>GET</td><td><code>/auth/me</code></td><td>פרטי המשתמש המחובר</td></tr><tr><td>POST</td><td><code>/auth/change-password</code></td><td>שינוי סיסמה ע"י המשתמש המחובר</td></tr><tr><td>POST</td><td><code>/admin/users/{id}/reset-password</code></td><td>✅ (OD-12) איפוס סיסמה ע"י מנהל</td></tr></tbody></table></div>
+<h3 id="82-לקוחות-ובקשות">8.2 לקוחות ובקשות</h3>
+<div class="table-wrap"><table><thead><tr><th>Method</th><th>Path</th><th>תיאור</th><th>סטטוס</th></tr></thead><tbody><tr><td>GET</td><td><code>/customers/</code> <code>/customers/{id}</code></td><td>CRUD לקוחות</td><td>✅ (להגן בהרשאות)</td></tr><tr><td>POST/PUT/DELETE</td><td><code>/customers/...</code></td><td></td><td>✅ 🔧 (הצפנת סיסמה)</td></tr><tr><td>POST</td><td><code>/concrete-requests/</code></td><td>יצירת בקשה (status=OPEN) <strong>+ מנוע הפוך</strong> (OD-6) — מחזיר פניות תואמות</td><td>✅ 🔧 (לקשור למשתמש, ליצור Matches+התראות)</td></tr><tr><td>GET</td><td><code>/concrete-requests/customer/{id}</code></td><td>הבקשות שלי</td><td>✅</td></tr><tr><td>GET</td><td><code>/concrete-requests/{id}</code></td><td>בקשה בודדת + התאמות</td><td>✅ 🔧</td></tr><tr><td>PUT/DELETE</td><td><code>/concrete-requests/{id}</code></td><td>עדכון/ביטול</td><td>✅ 🔧 (חסום אם CLOSED)</td></tr></tbody></table></div>
+<h3 id="83-קבלנים-ופניות">8.3 קבלנים ופניות</h3>
+<div class="table-wrap"><table><thead><tr><th>Method</th><th>Path</th><th>תיאור</th><th>סטטוס</th></tr></thead><tbody><tr><td>GET/POST/PUT/DELETE</td><td><code>/contractors/...</code></td><td>CRUD קבלנים</td><td>✅ 🔧</td></tr><tr><td>POST</td><td><code>/contractor-offers/</code></td><td>יצירת פנייה <strong>+ שמירה</strong> ב-DB</td><td>🔧 (כיום מבוטל!)</td></tr><tr><td>POST</td><td><code>/contractor-offers/send/</code></td><td>הרצת המנוע והחזרת מועמדים</td><td>✅ 🔧 (צריך גם לשמור פנייה + ליצור Matches + התראות)</td></tr><tr><td>GET</td><td><code>/contractor-offers/contractor/{id}</code></td><td>הפניות שלי + מי הותאם/אישר</td><td>✅ 🔧</td></tr><tr><td>GET/PUT/DELETE</td><td><code>/contractor-offers/{id}</code></td><td></td><td>✅</td></tr></tbody></table></div>
+<h3 id="84-התאמה-ואישור-">8.4 התאמה ואישור ➕</h3>
+<div class="table-wrap"><table><thead><tr><th>Method</th><th>Path</th><th>תיאור</th></tr></thead><tbody><tr><td>POST</td><td><code>/matches/{match_id}/accept</code></td><td>לקוח מאשר פנייה (אטומי — הראשון זוכה)</td></tr><tr><td>POST</td><td><code>/matches/{match_id}/decline</code></td><td>לקוח דוחה</td></tr><tr><td>GET</td><td><code>/matches/request/{request_id}</code></td><td>ההתאמות של בקשה מסוימת</td></tr></tbody></table></div>
+<h3 id="85-התראות-">8.5 התראות ➕</h3>
+<div class="table-wrap"><table><thead><tr><th>Method</th><th>Path</th><th>תיאור</th></tr></thead><tbody><tr><td>GET</td><td><code>/notifications/</code></td><td>ההתראות של המשתמש המחובר</td></tr><tr><td>GET</td><td><code>/notifications/unread-count</code></td><td>מונה לא-נקראו</td></tr><tr><td>POST</td><td><code>/notifications/{id}/read</code></td><td>סימון כנקרא</td></tr></tbody></table></div>
+<h3 id="86-lookups">8.6 Lookups</h3>
+<div class="table-wrap"><table><thead><tr><th>Method</th><th>Path</th><th>תיאור</th><th>סטטוס</th></tr></thead><tbody><tr><td>GET</td><td><code>/purposes/</code> <code>/strengths/</code> <code>/reliants/</code> <code>/stone-sizes/</code> <code>/concrete-types/</code></td><td>קריאה (לטפסים)</td><td>✅</td></tr><tr><td>POST/PUT/DELETE</td><td>(אותם)</td><td>ניהול ע"י מנהל</td><td>🔧 (להוסיף היכן שחסר + הרשאת admin)</td></tr></tbody></table></div>
+<h3 id="87-טיפול-בשגיאות-אחיד">8.7 טיפול בשגיאות (אחיד)</h3>
+<ul><li><code>400</code> ולידציה, <code>401</code> לא מאומת, <code>403</code> אין הרשאה, <code>404</code> לא נמצא, <code>409</code> קונפליקט (למשל פנייה כבר נתפסה), <code>422</code> שגיאת סכימה, <code>500</code> שגיאת שרת. גוף אחיד: <code>{ "detail": "..." }</code> בעברית.</li></ul>
+<hr>
+<h2 id="9-ארכיטקטורת-צד-שרת">9. ארכיטקטורת צד שרת</h2>
+<p>השכבות הקיימות טובות ויש לשמר אותן:</p>
+<pre><code>controller/  →  service/  →  repository/  →  models/ (SQLAlchemy)
+     ▲             ▲              ▲
+    dto/        (לוגיקה)      (גישת DB)</code></pre>
+<ul><li><strong>controller</strong> — הגדרת endpoints, ולידציה, קריאה ל-service/repository.</li><li><strong>service</strong> — לוגיקה עסקית (מנוע התאמה, תמחור, התראות, אישור עסקה טרנזקציוני).</li><li><strong>repository</strong> — CRUD מול ה-DB.</li><li><strong>dto</strong> — Pydantic, קלט/פלט.</li><li><strong>models</strong> — SQLAlchemy ORM.</li></ul>
+<p><strong>עקרונות:</strong></p>
+<ul><li>כל פעולה שמשנה כמה טבלאות (אישור עסקה) — בתוך <strong>טרנזקציה</strong> אחת.</li><li>שירותים חיצוניים (Geocoding) מאחורי interface (כבר קיים שלד <code>RegionService</code>).</li><li>מנוע ההתאמה כ-service נקי, בלי תלות ב-FastAPI.</li></ul>
+<hr>
+<h2 id="10-אבטחה-אימות-והרשאות">10. אבטחה, אימות והרשאות</h2>
+<p><strong>אושר: שם משתמש + סיסמה, עם תפקידים.</strong></p>
+<ul><li><strong>סיסמאות:</strong> לעולם לא בטקסט גלוי. Hash עם bcrypt/argon2. (תיקון קריטי — כיום גלוי, 15 תווים.)</li><li><strong>טוקנים:</strong> JWT עם <code>sub</code> (מזהה) + <code>role</code>. תוקף + refresh (או תוקף ארוך ל-MVP).</li><li><strong>הרשאות (RBAC):</strong></li><ul><li>לקוח: רק הבקשות/ההתאמות/ההתראות שלו.</li><li>קבלן: רק הפניות/ההתאמות/ההתראות שלו.</li><li>מנהל: ניהול lookups + צפייה כוללת.</li></ul><li><strong>Middleware:</strong> dependency ב-FastAPI שמאמת JWT ומזריק <code>current_user</code>; dependency נוסף לבדיקת role.</li><li><strong>בעלות (Ownership):</strong> בכל endpoint שמקבל <code>{id}</code> — לוודא שהמשאב שייך למשתמש המחובר (מניעת IDOR).</li><li><strong>CORS:</strong> בייצור להגביל ל-origin של הלקוח בלבד (כיום <code>*</code>).</li><li><strong>ולידציה:</strong> קואורדינטות בטווח חוקי, כמות &gt; 0, מחיר תקין, expiry עתידי.</li><li><strong>Rate limiting</strong> על login והרשמה (הגנה מפני brute-force) — שלב מאוחר.</li><li>✅ (OD-12) <strong>שחזור סיסמה:</strong> ל-MVP <strong>איפוס ע"י מנהל</strong> (אין מייל/SMS). המנהל מאפס לסיסמה זמנית והמשתמש מחליף בכניסה הבאה.</li></ul>
+<hr>
+<h2 id="11-מערכת-ההתראות">11. מערכת ההתראות</h2>
+<p><strong>אושר: התראות בתוך האפליקציה בלבד (In-app), בלי SMS/ווטסאפ/מייל ב-MVP.</strong></p>
+<ul><li>כל אירוע יוצר רשומת <code>Notifications</code> למשתמש הרלוונטי.</li><li>הלקוח רואה מונה לא-נקראו + מרכז התראות; רענון ב-polling (למשל כל 15–30 שנ') או WebSocket בשלב מתקדם.</li><li><strong>אירועים מחוללי התראה:</strong></li></ul>
+<div class="table-wrap"><table><thead><tr><th>אירוע</th><th>אל</th><th>תוכן</th></tr></thead><tbody><tr><td>נמצאה התאמה לבקשה</td><td>לקוח</td><td>"נמצאה שארית בטון מתאימה! מחיר X, מרחק Y ק"מ. לאישור..."</td></tr><tr><td>לקוח אישר פנייה</td><td>קבלן</td><td>"לקוח אישר את הפנייה שלך. טלפון: ..."</td></tr><tr><td>הפנייה נתפסה ע"י אחר</td><td>לקוחות שהותאמו</td><td>"ההצעה כבר נתפסה"</td></tr><tr><td>פנייה עומדת לפוג</td><td>קבלן</td><td>"הפנייה שלך תפוג בעוד X" (שלב מתקדם, דורש job)</td></tr></tbody></table></div>
+<ul><li>✅ (OD-11) <strong>תפוגות בבדיקה עצלה (lazy):</strong> פנייה שעבר <code>expiry_time</code> שלה מטופלת כ-EXPIRED בזמן שהיא נטענת/נשאלת (וה-Matches שלה → EXPIRED). אין job רקע ואין התראת תפוגה יזומה ל-MVP; לכן השורה "פנייה עומדת לפוג" בטבלה למעלה נדחית לשלב מאוחר.</li></ul>
+<hr>
+<h2 id="12-צד-לקוח-client">12. צד לקוח (Client)</h2>
+<p><strong>סטאק (קיים):</strong> Vite 8 + React 19 + TypeScript, <code>@vis.gl/react-google-maps</code>, axios, react-router-dom 7. RTL עברית. פורט 5173.</p>
+<p><strong>קיים כבר:</strong> שכבת API (types/client/resources), Layout RTL, HomePage, MapPicker, ועמוד יצירת בקשה (<code>NewConcreteRequestPage</code>). יש לחבר אותם לאימות ולהרחיב.</p>
+<h3 id="121-מפת-מסכים-וניווט-site-map">12.1 מפת מסכים וניווט (Site Map)</h3>
+<pre><code>/                       דף נחיתה (אורח)                         [ציבורי]
+/login                  התחברות                                 [ציבורי]
+/register               הרשמה (בחירת תפקיד → טופס)              [ציבורי]
+/forgot-password        שחזור סיסמה                             [ציבורי] *תלוי החלטה
+│
+├─ /app                 הפניה אוטומטית ללוח לפי תפקיד            [מאומת]
+│
+├─ לקוח ─────────────────────────────────────────────────────  [role=customer]
+│   /customer                       לוח בקרה
+│   /customer/requests              הבקשות שלי (רשימה)
+│   /customer/requests/new          בקשה חדשה (קיים)
+│   /customer/requests/:id          פרטי בקשה + התאמות + אישור
+│   /customer/history               היסטוריית עסקאות
+│
+├─ קבלן ─────────────────────────────────────────────────────  [role=contractor]
+│   /contractor                     לוח בקרה (פניות פעילות + ספירה לאחור)
+│   /contractor/offers              הפניות שלי (רשימה)
+│   /contractor/offers/new          פנייה חדשה → תוצאות התאמה
+│   /contractor/offers/:id          פרטי פנייה + לקוחות שהותאמו/אישרו
+│   /contractor/history             היסטוריית עסקאות
+│
+├─ מנהל ─────────────────────────────────────────────────────  [role=admin]
+│   /admin                          לוח בקרה + סטטיסטיקות
+│   /admin/lookups                  ניהול טבלאות עזר
+│   /admin/concrete-types           ניהול סוגי בטון
+│   /admin/users                    ניהול משתמשים
+│
+└─ משותף ────────────────────────────────────────────────────  [מאומת]
+    /notifications                  מרכז התראות
+    /profile                        הפרופיל שלי / הגדרות
+    /403  /404                      אין הרשאה / לא נמצא</code></pre>
+<p>בקרת גישה: <code>PublicRoute</code> (מפנה החוצה אם כבר מחובר), <code>ProtectedRoute</code> (דורש טוקן), <code>RoleRoute</code> (דורש תפקיד ספציפי). <code>/app</code> מפנה לפי <code>role</code> שב-JWT.</p>
+<h3 id="122-מסכי-אורח-ואימות-ציבורי">12.2 מסכי אורח ואימות (ציבורי)</h3>
+<div class="table-wrap"><table><thead><tr><th>מסך</th><th>נתיב</th><th>תיאור ופעולות עיקריות</th><th>API</th></tr></thead><tbody><tr><td><strong>דף נחיתה</strong></td><td><code>/</code></td><td>הסבר "איך זה עובד", CTA להרשמה/התחברות, הבחנה לקוח מול קבלן</td><td>—</td></tr><tr><td><strong>הרשמה</strong></td><td><code>/register</code></td><td>שלב 1: בחירת תפקיד (לקוח/קבלן). שלב 2: טופס — שם פרטי/משפחה, שם משתמש, טלפון, סיסמה + אימות סיסמה. ולידציה בזמן אמת, בדיקת זמינות שם משתמש</td><td><code>POST /auth/register/{role}</code></td></tr><tr><td><strong>התחברות</strong></td><td><code>/login</code></td><td>שם משתמש + סיסמה, "זכור אותי", קישור לשחזור</td><td><code>POST /auth/login</code></td></tr><tr><td><strong>שחזור סיסמה</strong></td><td><code>/forgot-password</code></td><td>ללא מייל/SMS — שחזור מוגבל (איפוס ע"י מנהל / שאלת אבטחה). *תלוי <a href="#16-החלטות-פתוחות-לאישור">OD-12</a>*</td><td>—</td></tr><tr><td><strong>שגיאה</strong></td><td><code>/403</code> <code>/404</code></td><td>אין הרשאה / דף לא קיים</td><td>—</td></tr></tbody></table></div>
+<h3 id="123-מסכי-לקוח-rolecustomer">12.3 מסכי לקוח <code>role=customer</code></h3>
+<div class="table-wrap"><table><thead><tr><th>מסך</th><th>נתיב</th><th>תיאור ופעולות עיקריות</th><th>API</th></tr></thead><tbody><tr><td><strong>לוח בקרה</strong></td><td><code>/customer</code></td><td>סיכום: בקשות פעילות, התאמות ממתינות לאישור, מונה התראות, כפתור "בקשה חדשה"</td><td><code>GET /concrete-requests/customer/{id}</code>, <code>GET /notifications/unread-count</code></td></tr><tr><td><strong>הבקשות שלי</strong></td><td><code>/customer/requests</code></td><td>רשימת בקשות עם סינון לפי סטטוס (ממתין/נסגר/בוטל), תג סטטוס, כניסה לפרטים</td><td><code>GET /concrete-requests/customer/{id}</code></td></tr><tr><td><strong>בקשה חדשה</strong> ✅</td><td><code>/customer/requests/new</code></td><td>טופס קיים: מטרה (מ-Purpose), כמות, כתובת + בחירת מיקום על מפה. לחבר ל-<code>customer_id</code> המחובר</td><td><code>GET /purposes/</code>, <code>POST /concrete-requests/</code></td></tr><tr><td><strong>פרטי בקשה</strong></td><td><code>/customer/requests/:id</code></td><td>סטטוס הבקשה; רשימת ההתאמות (פניות שנמצאו) עם מחיר/מרחק/תפוגה; כפתורי <strong>אשר</strong>/<strong>דחה</strong>; לאחר אישור — הצגת פרטי הקבלן (טלפון)</td><td><code>GET /matches/request/:id</code>, <code>POST /matches/:mid/accept</code>, <code>POST /matches/:mid/decline</code></td></tr><tr><td><strong>היסטוריית עסקאות</strong></td><td><code>/customer/history</code></td><td>עסקאות שנסגרו, פרטי קבלן, מחיר, תאריך</td><td><code>GET /concrete-requests/customer/{id}?status=CLOSED</code></td></tr></tbody></table></div>
+<h3 id="124-מסכי-קבלן-rolecontractor">12.4 מסכי קבלן <code>role=contractor</code></h3>
+<div class="table-wrap"><table><thead><tr><th>מסך</th><th>נתיב</th><th>תיאור ופעולות עיקריות</th><th>API</th></tr></thead><tbody><tr><td><strong>לוח בקרה</strong></td><td><code>/contractor</code></td><td>פניות פעילות עם <strong>ספירה לאחור לתפוגה</strong>, כמה לקוחות הותאמו/אישרו, כפתור "פנייה חדשה"</td><td><code>GET /contractor-offers/contractor/{id}</code></td></tr><tr><td><strong>פנייה חדשה</strong></td><td><code>/contractor/offers/new</code></td><td>טופס: בחירת סוג בטון (מדורג מטרה→חוזק→סומך→גודל אבן), כמות, מחיר, זמן תפוגה, מיקום על מפה. שליחה מריצה את המנוע</td><td><code>GET /concrete-types/</code> (+lookups), <code>POST /contractor-offers/send/</code></td></tr><tr><td><strong>תוצאות התאמה</strong></td><td>(אחרי שליחה / <code>/contractor/offers/:id/matches</code>)</td><td>רשימת הלקוחות שהותאמו מדורגת (מרחק/ותק/ניקוד), סטטוס כל התאמה (הוזמן/אישר/דחה). עדכון חי עד שמישהו מאשר</td><td><code>GET /contractor-offers/:id</code></td></tr><tr><td><strong>הפניות שלי</strong></td><td><code>/contractor/offers</code></td><td>רשימת כל הפניות + סטטוס (פתוח/נסגר/פג/בוטל), מי אישר</td><td><code>GET /contractor-offers/contractor/{id}</code></td></tr><tr><td><strong>פרטי פנייה</strong></td><td><code>/contractor/offers/:id</code></td><td>פרטי הפנייה, רשימת המותאמים, ואם נסגרה — <strong>פרטי הלקוח שאישר</strong> (טלפון), אפשרות ביטול בזמן שהיא פתוחה</td><td><code>GET /contractor-offers/:id</code>, <code>DELETE /contractor-offers/:id</code></td></tr><tr><td><strong>היסטוריית עסקאות</strong></td><td><code>/contractor/history</code></td><td>פניות שנסגרו + פרטי הלקוח + מחיר + תאריך</td><td><code>GET /contractor-offers/contractor/{id}?status=CLOSED</code></td></tr></tbody></table></div>
+<h3 id="125-מסכי-מנהל-roleadmin">12.5 מסכי מנהל <code>role=admin</code></h3>
+<div class="table-wrap"><table><thead><tr><th>מסך</th><th>נתיב</th><th>תיאור ופעולות עיקריות</th><th>API</th></tr></thead><tbody><tr><td><strong>לוח בקרה</strong></td><td><code>/admin</code></td><td>KPI: מס' בקשות פתוחות, פניות פעילות, אחוז התאמה, עסקאות שנסגרו</td><td>(endpoint סטטיסטיקות ➕)</td></tr><tr><td><strong>ניהול טבלאות עזר</strong></td><td><code>/admin/lookups</code></td><td>CRUD ל-מטרות/חוזק/סומך/גודל אבן</td><td><code>GET/POST/PUT/DELETE /purposes/,/strengths/,...</code></td></tr><tr><td><strong>ניהול סוגי בטון</strong></td><td><code>/admin/concrete-types</code></td><td>הרכבת סוג בטון מצירוף ערכי ה-lookup</td><td><code>GET/POST/PUT/DELETE /concrete-types/</code></td></tr><tr><td><strong>ניהול משתמשים</strong></td><td><code>/admin/users</code></td><td>רשימת לקוחות/קבלנים, צפייה, השבתה/מחיקה רכה</td><td><code>GET /customers/</code>, <code>GET /contractors/</code></td></tr></tbody></table></div>
+<h3 id="126-רכיבים-ותשתית-משותפים">12.6 רכיבים ותשתית משותפים</h3>
+<ul><li><strong>AuthContext</strong> — מצב המשתמש/טוקן, <code>login</code>/<code>logout</code>, שמירה ב-<code>localStorage</code>, רענון טוקן, ניתוב 401→login.</li><li><strong>Layout</strong> — ניווט מותאם-תפקיד, <code>NotificationBell</code> (מונה + פתיחת מרכז התראות), תפריט משתמש (פרופיל/יציאה).</li><li><strong>ProtectedRoute / RoleRoute / PublicRoute</strong>.</li><li><strong>MapPicker</strong> ✅ (בחירת מיקום) + <strong>MapView</strong> ➕ (הצגת סמנים/מרחקים).</li><li><strong>מרכז התראות</strong> (<code>/notifications</code>) — רשימה, סימון כנקרא, CTA לאישור מהיר; polling.</li><li><strong>פרופיל/הגדרות</strong> (<code>/profile</code>) — עריכת פרטים, <strong>שינוי סיסמה</strong>, יציאה.</li><li>ספריית UI: <code>Toast</code>, <code>Modal</code>/<code>ConfirmDialog</code>, <code>Skeleton</code>/Loading, <code>EmptyState</code>, <code>ErrorBoundary</code>, <code>StatusBadge</code>, <code>CountdownTimer</code>, שדות טופס עם ולידציה, <code>Pagination</code>.</li><li><strong>api layer</strong> ✅ (types/client/resources) — להרחיב ל-auth/matches/notifications; interceptor שמזריק טוקן ומטפל ב-401/403.</li></ul>
+<h3 id="127-עקרונות-ux-ומצבים">12.7 עקרונות UX ומצבים</h3>
+<ul><li><strong>Mobile-first</strong> — הקבלן בשטח עם טלפון; כל מסך חייב לעבוד מצוין בנייד (ראה המלצת PWA ב-<a href="#17-המלצות-נוספות-מה-עוד-כדאי-להוסיף">סעיף 17</a>).</li><li>RTL מלא, עברית, מטבע ב-₪, כמות ב-מ"ק, מרחק ב-ק"מ, זמן יחסי ("לפני 3 ימים").</li><li>כל מסך רשימה/נתונים מגדיר שלושה מצבים: <strong>טעינה</strong> (Skeleton), <strong>ריק</strong> (הסבר + CTA), <strong>שגיאה</strong> (הודעה + נסה שוב).</li><li>אישור לפעולות הרסניות (ביטול בקשה/פנייה) דרך <code>ConfirmDialog</code>.</li><li>משוב מיידי אחרי כל פעולה (Toast), מניעת שליחה כפולה (disable + idempotency).</li><li>נגישות: ניגודיות, ניווט מקלדת, תוויות ARIA.</li></ul>
+<hr>
+<h2 id="13-מקרי-קצה--מקיף">13. מקרי קצה — מקיף</h2>
+<h3 id="131-בקשות-לקוח">13.1 בקשות לקוח</h3>
+<ul><li>בקשה ללא <code>lat/lng</code> → נדחית (חובה למנוע).</li><li>כמות ≤ 0 / ריקה / חורגת מ-DECIMAL(6,2) → ולידציה.</li><li>מטרה שלא קיימת ב-Purpose → 400.</li><li>לקוח מגיש כמה בקשות במקביל → מותר; כל אחת מטופלת עצמאית.</li><li>עריכת בקשה שכבר הותאמה/נסגרה → חסום (409) או מותר רק ב-OPEN.</li><li>ביטול בקשה שיש לה התאמות NOTIFIED פעילות → יש לבטל את ההתאמות + להודיע.</li><li>טבלת Purpose ריקה → אף בקשה לא תותאם לעולם (כשל שקט!) → יש להזהיר/לזרוע seed.</li></ul>
+<h3 id="132-פניות-קבלן-ומנוע">13.2 פניות קבלן ומנוע</h3>
+<ul><li>אין בקשות ממתינות בכלל → המנוע מחזיר רשימה ריקה; להודיע לקבלן "אין לקוחות מתאימים כרגע"; הפנייה נשמרת ונשארת OPEN עד תפוגה.</li><li>כל המועמדים מחוץ לרדיוס → רשימה ריקה.</li><li><code>concrete_id</code> ללא <code>Purpose_id</code> (NULL ב-Concrete_type) → שלב 2 מחזיר ריק; לטפל בחן.</li><li>כמות פנייה קטנה מ-90% מכל בקשה → אף התאמה (הכלל מחמיר — ראה OD-4).</li><li><code>expiry_time</code> בעבר בעת הזנה → ולידציה (חייב עתידי).</li><li>שתי פניות של אותו קבלן שמתאימות לאותה בקשה → הבקשה יכולה לקבל שתי התראות; אישור אחת סוגר את הבקשה ומבטל את השנייה.</li><li><code>lat/lng</code> לא תקינים/מחוץ לישראל → ולידציה/אזהרה.</li><li>כמות עם יותר מ-2 ספרות עשרוניות → עיגול/דחייה.</li></ul>
+<h3 id="133-אישור-ומרוץ-concurrency">13.3 אישור ומרוץ (Concurrency)</h3>
+<ul><li><strong>שני לקוחות מאשרים אותה פנייה במקביל</strong> → חובה עדכון אטומי: <code>UPDATE Offer SET status=CLOSED WHERE id=? AND status=OPEN</code> — רק ה-UPDATE שהשפיע על שורה זוכה; השני מקבל 409 "כבר נתפסה".</li><li>לקוח מאשר פנייה שכבר פגה (<code>expiry_time</code> עבר) → 409/410 "ההצעה פגה".</li><li>לקוח מאשר פנייה שכבר CLOSED → 409.</li><li>לקוח מאשר בעוד הבקשה שלו כבר CLOSED (אישר פנייה אחרת קודם) → חסום; בקשה יכולה לאשר רק פנייה אחת.</li><li>לאחר אישור: לעדכן במחזור אחד — Offer=CLOSED, Request=CLOSED, Match=ACCEPTED, שאר ה-Matches של אותה פנייה=SUPERSEDED, שאר ה-Matches של אותה בקשה=מבוטלות; ולשלוח התראות.</li></ul>
+<h3 id="134-תפוגות-וזמן">13.4 תפוגות וזמן</h3>
+<ul><li>פנייה פגה לפני שמישהו אישר → status=EXPIRED, כל ה-Matches=EXPIRED, הבקשות חוזרות למעשה ל-OPEN (הן ממילא נשארו OPEN).</li><li>שעון שרת מול לקוח, אזורי זמן → לעבוד ב-UTC ולהמיר בתצוגה.</li><li><code>date</code> הוא DATE (רזולוציית יום) → דירוג "ימי המתנה" ברזולוציית יום; לשקול DATETIME אם צריך דיוק.</li></ul>
+<h3 id="135-אימות-והרשאות">13.5 אימות והרשאות</h3>
+<ul><li>לקוח ניגש ל-endpoint של קבלן → 403.</li><li>גישה למשאב של משתמש אחר (IDOR) → 403.</li><li>טוקן פג/לא תקין → 401.</li><li>שם משתמש כבר קיים בהרשמה → 409.</li><li>סיסמה חלשה → ולידציה (מדיניות בסיסית).</li></ul>
+<h3 id="136-נתונים-ומצב">13.6 נתונים ומצב</h3>
+<ul><li>מחיקת לקוח/קבלן עם בקשות/פניות פעילות → למנוע או ל-soft-delete (שלמות FK).</li><li>מחיקת ערך lookup בשימוש → למנוע (FK).</li><li>שדה <code>region</code> הלא-עקבי → להסיר/לגזור (ראה OD-3).</li><li>קונפליקט טיפוס <code>status</code> (DECIMAL מול NVARCHAR מול NULL) → להאחיד לפי מכונת המצב.</li></ul>
+<h3 id="137-גיאוגרפיהמפה">13.7 גיאוגרפיה/מפה</h3>
+<ul><li>טעינת Google Maps מאחורי NetFree (יירוט SSL) → ייתכן כשל טעינה; לספק חלופה/הודעה (מפתח ב-<code>client/.env</code>).</li><li>לחיצה מחוץ לגבולות הגיוניים → אזהרה.</li></ul>
+<hr>
+<h2 id="14-פערים-מהמצב-הקיים-ורשימת-ניקוי">14. פערים מהמצב הקיים ורשימת ניקוי</h2>
+<p><strong>חובה לתקן (חוסם):</strong></p>
+<ol><li><code>POST /contractor-offers/send/</code> — לשמור את הפנייה, ליצור Matches, לשלוח התראות (כיום רק מסנן ומחזיר).</li><li>אין flow אישור לקוח — לממש <code>/matches/{id}/accept</code> טרנזקציוני.</li><li>אין אימות — לממש register/login/JWT + hashing.</li><li><code>status</code> — להאחיד (מודל DECIMAL NOT NULL מול DB nullable מול DTO string).</li><li>seed לטבלאות lookup (Purpose וכו') — אחרת אין התאמות.</li><li>אין טבלאות <code>OfferMatches</code> / <code>Notifications</code>.</li></ol>
+<p><strong>לניקוי (קבצי זבל/ניסוי בצד שרת):</strong> <code>service/rrrrrrrrrrrrrrr.py</code>, <code>service/ttttttttttttttt.py</code>, <code>service/test.py</code>, <code>service/test163.py</code>, <code>service/matching_service.py</code>, <code>service/matching_service2.py</code>, <code>service/mounday154.py</code> (להחליף ב-NotificationService אמיתי), <code>controller/test.py</code>, <code>dto/testDto.py</code>, <code>gm2.py</code>, <code>GoogleMaps.py</code> (סקריפט ניסוי), <code>main.py</code> (סקריפט ניסוי — הכניסה האמיתית היא <code>app.py</code>), <code>type_safety.py</code> (לוודא אם בשימוש).</p>
+<p><strong>לא עקבי / להחלטה:</strong></p>
+<ul><li><code>region</code> ב-<code>match_response_dto</code> בלי עמודה תואמת.</li><li><code>id_customer</code> שם מבלבל → <code>accepted_request_id</code>.</li><li><code>CandidateSelector</code> קורא ל-SP <code>GetCandidateRequests</code> שלא קיים במאגר.</li><li>הכפלת מחיר (<code>double_price_from_string</code>) — לא מחוברת ל-<code>/send/</code>; להבהיר את הכוונה (עמלה? טעות?).</li></ul>
+<hr>
+<h2 id="15-מפת-דרכים--שלבי-פיתוח">15. מפת דרכים / שלבי פיתוח</h2>
+<p><strong>שלב 0 — ייצוב בסיס (תשתית):</strong></p>
+<ul><li>ניקוי קבצי ניסוי, האחדת <code>status</code>, מיגרציית DB (password_hash, status enums, OfferMatches, Notifications), seed ל-lookups.</li></ul>
+<p><strong>שלב 1 — אימות:</strong></p>
+<ul><li>register/login/JWT + hashing, RBAC middleware, חיבור הלקוח (Context, Protected Routes).</li></ul>
+<p><strong>שלב 2 — הזרימה המרכזית (הליבה):</strong></p>
+<ul><li>תיקון <code>/send/</code> (שמירה + Matches + התראות), מימוש <code>/matches/accept</code> טרנזקציוני, מרכז התראות בלקוח.</li><li>עמודי לקוח (בקשה, פרטי בקשה, אישור) + עמודי קבלן (פנייה, תוצאות, הפניות שלי).</li></ul>
+<p><strong>שלב 3 — תפוגות ותחזוקה:</strong></p>
+<ul><li>scheduler לתפוגת פניות/התאמות, מסך מנהל ל-lookups, סטטיסטיקות.</li></ul>
+<p><strong>שלב 4 — שיפורים:</strong></p>
+<ul><li>דיוק גיאוגרפי (SQL geography/SP), פרמטרים מוגדרים (רדיוס/משקלים), התאמה לפי מפרט מלא, WebSocket להתראות, Rate limiting.</li></ul>
+<hr>
+<h2 id="16-החלטות-פתוחות-לאישור">16. החלטות פתוחות לאישור</h2>
+<p><strong>כל ההחלטות הוכרעו (2026-07-01)</strong> ומסומנות ✅ — האיפיון נעול. להלן ההכרעות (חלקן ניתנות לשינוי בעתיד).</p>
+<p><strong>הוכרעו גם:</strong> אימות שם-משתמש+סיסמה (hashed) עם תפקידים · התראות בתוך-אפליקציה בלבד · מודל תיווך בלבד (בלי סליקה) · כיוון המנוע — הפעלה בהזנת פניית קבלן.</p>
+<ul><li>✅ <strong>OD-2 — קריטריון התאמה: הוכרע — מטרה קובעת מפרט.</strong> הלקוח בוחר מטרה; המערכת גוזרת ממנה את המפרט הנדרש (חוזק≥ / סומך / גודל אבן) לפי מיפוי מנוהל בטבלת <code>Purpose</code>, ומתאימה לפיו. אם אין מיפוי — נפילה להתאמה לפי מטרה בלבד. (ראה <a href="#52-שלבי-הצינור-pipeline">5.2</a>.)</li><li>✅ <strong>OD-3 — שדה region: הוכרע — להסיר מה-DTO.</strong> ההתאמה מסתמכת על מרחק גיאוגרפי; אין צורך באזור טקסטואלי.</li><li>✅ <strong>OD-4 — כלל הכמות: הוכרע — נשאר 90%–100%.</strong> פנייה תתאים רק אם <code>request.qty ∈ [0.9×offer.qty, offer.qty]</code>. המודל: לקוח יחיד לוקח כמעט את כל השארית; לקוח שצריך כמות קטנה בהרבה לא יותאם — מכוון.</li><li>✅ <strong>OD-5 — אסטרטגיית התראה: הוכרע — broadcast.</strong> שולחים בו-זמנית לכל הלקוחות שהותאמו; <strong>הראשון שמאשר זוכה</strong> והפנייה נסגרת; היתר מקבלים "כבר נתפסה".</li><li>✅ <strong>OD-6 — טריגר: הוכרע — דו-כיווני.</strong> המנוע רץ גם בהזנת פניית קבלן (מוצא בקשות) וגם בבקשת לקוח חדשה (מוצא פניות פתוחות ומתריע ללקוח). (ראה <a href="#56-טריגר-הפוך-בקשת-לקוח-חדשה">5.6</a>.)</li><li>✅ <strong>OD-7 — תוקף בקשה: הוכרע — ללא תפוגה.</strong> הבקשה ממתינה עד שנסגרת (אישור) או מבוטלת; אין EXPIRED לבקשה.</li><li>✅ <strong>OD-8 — מבנה משתמשים: הוכרע — טבלאות נפרדות, תפקיד יחיד.</strong> נשמרות <code>Customers</code>/<code>Contractors</code> נפרדות + <code>Admins</code> (מינימום שינוי לקוד הקיים). משתמש הוא בעל תפקיד יחיד; מי שרוצה שני תפקידים נרשם פעמיים.</li><li>✅ <strong>OD-9 — פרמטרים: הוכרע — קבועים בקונפיג.</strong> רדיוס (10 ק"מ) ומשקלי הניקוד (w1=5, w2=1) בקובץ הגדרות, לכיוונון בקוד; לא חשופים למשתמש.</li><li>✅ <strong>OD-10 — מנוע: הוכרע — R-tree ב-Python.</strong> נשאר המימוש הקיים ל-MVP; מעבר ל-SQL geography/SP נדחה להגדלת נפח.</li><li>✅ <strong>OD-11 — תפוגות: הוכרע — בדיקה עצלה (lazy) בזמן קריאה.</strong> פנייה שפגה מסומנת EXPIRED כשהיא נטענת/נשאלת; אין job רקע והתראת תפוגה יזומה ל-MVP.</li><li>✅ <strong>OD-12 — שחזור סיסמה: הוכרע — איפוס ע"י מנהל.</strong> ללא מייל/SMS ב-MVP; המנהל מאפס לסיסמה זמנית והמשתמש מחליף בכניסה.</li><li>✅ <strong>OD-13 — ערוץ להתראה קריטית: הוכרע — בתוך-אפליקציה בלבד ל-MVP.</strong> לא מוסיפים Web Push כרגע. <strong>מגבלה מוכרת ומקובלת:</strong> לקוח שאינו פתוח באפליקציה עלול לפספס את חלון התפוגה — אם יתברר כבעיה בפועל, זו התוספת הראשונה שנוסיף.</li></ul>
+<hr>
+<h2 id="17-המלצות-נוספות-מה-עוד-כדאי-להוסיף">17. המלצות נוספות (מה עוד כדאי להוסיף)</h2>
+<p>מעבר למה שכבר באיפיון, אלה תוספות שלדעתי חשובות למוצר אמיתי. מסומנות לפי עדיפות: <strong>[חובה]</strong> קריטי לתפקוד, <strong>[מומלץ]</strong> משפר משמעותית, <strong>[עתידי]</strong> לשלב מאוחר.</p>
+<h3 id="171-מוצר-ואמון">17.1 מוצר ואמון</h3>
+<ul><li><strong>[הוכרע — נדחה ל-post-MVP] הגבלת ההתראות בתוך-אפליקציה.</strong> בטון הוא מוצר בלחץ זמן (תפוגה בשעות), ולקוח שאינו פתוח באפליקציה ברגע ההתאמה עלול לפספס. הוחלט (<a href="#16-החלטות-פתוחות-לאישור">OD-13</a>): ל-MVP <strong>התראות בתוך-אפליקציה בלבד</strong>, המגבלה מוכרת ומקובלת. אם יתברר בפועל שלקוחות מפספסים התאמות — התוספת הראשונה שנוסיף היא <strong>Web Push</strong> לאירוע "נמצאה התאמה" (חינמי, עובד גם כשהדפדפן סגור), ורק אז לשקול SMS.</li><li><strong>[מומלץ] חשיפת פרטי קשר רק לאחר התאמה.</strong> טלפון של הצד השני נחשף רק אחרי אישור עסקה — מונע גרידה (scraping) של מספרים ושומר על פרטיות.</li><li><strong>[מומלץ] דירוג ומוניטין.</strong> דירוג 1–5 + הערה לאחר עסקה שנסגרה, לשני הכיוונים. בונה אמון בין זרים שמעבירים כסף/סחורה, ומאפשר לסנן משתמשים בעייתיים.</li><li><strong>[מומלץ] דיווח וחסימה.</strong> דיווח על אי-הגעה/התנהגות, וחסימת משתמש.</li><li><strong>[עתידי] אימות קבלנים.</strong> תג "מאומת" (ח.פ / רישיון), מעלה אמון ואיכות.</li><li><strong>[עתידי] תמונות לפנייה.</strong> הקבלן יכול לצרף תמונה של הבטון/האתר — מגביר ביטחון בלקוח.</li><li><strong>[חובה] תנאי שימוש ומדיניות פרטיות.</strong> מכיוון שמשתפים מספרי טלפון — נדרשת הסכמה מפורשת + עמוד תנאים.</li></ul>
+<h3 id="172-חוויית-משתמש-ונגישות">17.2 חוויית משתמש ונגישות</h3>
+<ul><li><strong>[חובה] Mobile-first / PWA.</strong> הקבלן בשטח עם טלפון. אפליקציה שניתן "להתקין" (PWA) עם אייקון וריצה במסך מלא. PWA גם תנאי מקדים ל-Web Push.</li><li><strong>[מומלץ] השלמת כתובת אוטומטית + Reverse Geocoding.</strong> Google Places Autocomplete לשדה הכתובת, ומילוי אוטומטי של הכתובת מלחיצה על המפה (ולהפך) — מפחית שגיאות מיקום.</li><li><strong>[מומלץ] ספירה לאחור חיה לתפוגה</strong> בכרטיס הפנייה/ההתאמה, ועדכון חי של סטטוס.</li><li><strong>[מומלץ] מערכת עיצוב עקבית</strong> (Toasts, Skeletons, Empty/Error states, StatusBadge) — מוגדר כבר בסעיף 12.6.</li><li><strong>[עתידי] ריבוי שפות (i18n).</strong> עברית עכשיו; לשוק הישראלי לשקול ערבית/רוסית בהמשך — לבנות מוכן ל-i18n מראש.</li></ul>
+<h3 id="173-טכני-וארכיטקטורה">17.3 טכני וארכיטקטורה</h3>
+<ul><li><strong>[מומלץ] עדכוני זמן אמת.</strong> ל-MVP polling להתראות/סטטוס; בהמשך WebSocket/SSE לחוויה מיידית (קריטי ללחץ הזמן).</li><li><strong>[חובה] אבטחת מפתח Google Maps.</strong> להוציא מהקוד, להגביל ל-referrer/דומיין, להפעיל רק את ה-APIs הנדרשים. לתעד את מגבלת NetFree (יירוט SSL) שעלולה לחסום טעינה.</li><li><strong>[חובה] Idempotency ומניעת כפילויות.</strong> מפתח idempotency על יצירת פנייה ועל אישור, למניעת שליחה כפולה/מרוץ.</li><li><strong>[מומלץ] Pagination/סינון/מיון</strong> בכל מסכי הרשימה (בקשות, פניות, התראות, משתמשים).</li><li><strong>[חובה] מיגרציות DB מסודרות (Alembic).</strong> במקום עריכה ידנית של <code>schema.sql</code> — לנהל שינויי סכימה בגרסאות.</li><li><strong>[מומלץ] בדיקות אוטומטיות.</strong> יחידה למנוע ההתאמה (הלוגיקה הקריטית: גיאו/מטרה/כמות/ניקוד) ואינטגרציה לתרחיש המרוץ (שני לקוחות מאשרים במקביל).</li><li><strong>[מומלץ] טיפול שגיאות ולוגים אחידים</strong> בצד שרת (כבר יש logger בסיסי) + מזהה בקשה (request id).</li><li><strong>[עתידי] קאשינג/אינדקס מתמיד</strong> למנוע ההתאמה בקנה מידה (ראה OD-10).</li></ul>
+<h3 id="174-תפעול-אבטחה-ותאימות">17.4 תפעול, אבטחה ותאימות</h3>
+<ul><li><strong>[חובה] Hashing לסיסמאות + JWT</strong> (כבר בסעיף 10) — התיקון הכי דחוף מבחינת אבטחה.</li><li><strong>[מומלץ] Rate limiting + הגנת brute-force</strong> על login/register.</li><li><strong>[מומלץ] מחיקה רכה (Soft delete) ויומן פעילות (Audit log)</strong> — לשמירת שלמות היסטוריה ועסקאות.</li><li><strong>[מומלץ] קונפיגורציית סביבות וסודות.</strong> <code>.env</code> לכל סביבה (dev/prod), הגבלת CORS בייצור, לא לשמור מפתחות בקוד.</li><li><strong>[עתידי] גיבויים אוטומטיים ל-DB וניטור (health/uptime).</strong></li></ul>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# סודות וסביבה
+.env
+*.env
+!*.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+ENV/
+
+# Node / client
+node_modules/
+dist/
+*.local
+
+# מערכת הפעלה / עורך
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# הגדרות מקומיות של Claude Code
+.claude/settings.local.json

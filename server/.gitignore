@@ -1,0 +1,26 @@
+# קבצי Python מהודרים
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# סביבות וירטואליות
+venv/
+env/
+ENV/
+.venv
+
+# קבצי IDE
+.vscode/
+.idea/
+*.swp
+
+# קובץ הגדרות סביבה (מכיל סיסמאות!)
+.env
+
+# קבצי לוג
+*.log
+
+# קבצי מערכת
+.DS_Store
+Thumbs.db

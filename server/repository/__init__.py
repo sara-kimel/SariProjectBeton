@@ -1,0 +1,16 @@
+"""
+חבילת ה-Repository
+מטרה: לרכז את כל הפעולות מול בסיס הנתונים
+כל מחלקה מטפלת בטבלה אחת
+"""
+
+from repository.customer_repository import CustomerRepository
+from repository.contractor_repository import ContractorRepository
+from repository.admin_repository import AdminRepository
+from repository.concrete_request_repository import ConcreteRequestRepository
+from repository.contractor_concrete_request_repository import ContractorConcreteRequestRepository
+from repository.strength_repository import StrengthRepository
+from repository.reliant_repository import ReliantRepository
+from repository.stone_size_repository import StoneSizeRepository
+from repository.purpose_repository import PurposeRepository
+from repository.concrete_type_repository import ConcreteTypeRepository
