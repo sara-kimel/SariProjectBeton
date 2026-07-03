@@ -2,9 +2,9 @@
 Controller לפניות של קבלנים (ContractorConcreteRequest).
 POST /       — שמירה בלבד (contractor_id של המשתמש המחובר, status='OPEN',
                מחיר כפי שהוזן ללא הכפלה — SPEC §14, expiry_time עתידי).
-POST /send/  — שלב 3: שומר פנייה + מריץ מנוע ההתאמה + יוצר OfferMatches (NOTIFIED)
+POST /send/  — שלב 3: שומר פניה + מריץ מנוע ההתאמה + יוצר OfferMatches (NOTIFIED)
                בטרנזקציה אחת, ומחזיר סיכום מדורג של הלקוחות שהותאמו.
-החלטה (OD/§8.3): "/" שומר בלבד; "/send/" שומר+מתאים. לקוח יוצר פנייה דרך /send/
+החלטה (OD/§8.3): "/" שומר בלבד; "/send/" שומר+מתאים. לקוח יוצר פניה דרך /send/
 כדי לקבל מיד את המותאמים; העריכה הפשוטה (PUT) והשמירה ללא מנוע נשארות ב-"/".
 """
 
@@ -23,6 +23,7 @@ from dto.match_response_dto import OfferSendResultDTO
 from repository.contractor_concrete_request_repository import ContractorConcreteRequestRepository
 from repository.concrete_type_repository import ConcreteTypeRepository
 from service.match_service import MatchService
+from service.deal_service import DealService
 from service.expiry_service import expire_stale_offers
 from service.security import get_current_user
 
@@ -57,7 +58,7 @@ def _naive_utc(dt: datetime) -> datetime:
 
 
 def _validate_offer_payload(data: ContractorConcreteRequestCreateDTO, db: Session) -> None:
-    """ולידציית פנייה משותפת ל-POST / ול-POST /send/. מנרמל expiry ל-UTC נאיבי."""
+    """ולידציית פניה משותפת ל-POST / ול-POST /send/. מנרמל expiry ל-UTC נאיבי."""
     if data.quantity is None or float(data.quantity) <= 0:
         raise HTTPException(status_code=422, detail="כמות הבטון חייבת להיות גדולה מ-0")
     if data.lat is None or data.lng is None:
@@ -102,10 +103,10 @@ def get_offer(
     repo = ContractorConcreteRequestRepository(db)
     offer = repo.get_by_id(request_id)
     if not offer:
-        raise HTTPException(status_code=404, detail=f"פנייה {request_id} לא נמצאה")
+        raise HTTPException(status_code=404, detail=f"פניה {request_id} לא נמצאה")
     if not _owns_or_admin(current, offer.contractor_id):
-        raise HTTPException(status_code=403, detail="אין הרשאה לצפות בפנייה זו")
-    # תפוגה עצלה (OD-11): אם הפנייה פגה — מסמנים ומחזירים את המצב המעודכן
+        raise HTTPException(status_code=403, detail="אין הרשאה לצפות בפניה זו")
+    # תפוגה עצלה (OD-11): אם הפניה פגה — מסמנים ומחזירים את המצב המעודכן
     expire_stale_offers(db)
     return repo.get_by_id(request_id)
 
@@ -117,11 +118,11 @@ def create_offer(
     db: Session = Depends(get_db),
 ):
     """
-    יצירת פנייה חדשה (שמירה בלבד — המנוע לא רץ בשלב 2).
+    יצירת פניה חדשה (שמירה בלבד — המנוע לא רץ בשלב 2).
     contractor_id נלקח מהמשתמש המחובר; status='OPEN'.
     """
     if current["role"] != "contractor":
-        raise HTTPException(status_code=403, detail="רק קבלן יכול לפתוח פנייה")
+        raise HTTPException(status_code=403, detail="רק קבלן יכול לפתוח פניה")
 
     _validate_offer_payload(data, db)
     return ContractorConcreteRequestRepository(db).create_for_contractor(current["id"], data)
@@ -137,11 +138,11 @@ def update_offer(
     repo = ContractorConcreteRequestRepository(db)
     offer = repo.get_by_id(request_id)
     if not offer:
-        raise HTTPException(status_code=404, detail=f"פנייה {request_id} לא נמצאה")
+        raise HTTPException(status_code=404, detail=f"פניה {request_id} לא נמצאה")
     if not _owns_or_admin(current, offer.contractor_id):
-        raise HTTPException(status_code=403, detail="אין הרשאה לערוך פנייה זו")
+        raise HTTPException(status_code=403, detail="אין הרשאה לערוך פניה זו")
     if not _is_open(offer):
-        raise HTTPException(status_code=409, detail="לא ניתן לערוך פנייה שאינה פתוחה")
+        raise HTTPException(status_code=409, detail="לא ניתן לערוך פניה שאינה פתוחה")
     if data.expiry_time is not None:
         if not _is_future(data.expiry_time):
             raise HTTPException(status_code=422, detail="זמן התפוגה חייב להיות עתידי")
@@ -158,12 +159,14 @@ def delete_offer(
     repo = ContractorConcreteRequestRepository(db)
     offer = repo.get_by_id(request_id)
     if not offer:
-        raise HTTPException(status_code=404, detail=f"פנייה {request_id} לא נמצאה")
+        raise HTTPException(status_code=404, detail=f"פניה {request_id} לא נמצאה")
     if not _owns_or_admin(current, offer.contractor_id):
-        raise HTTPException(status_code=403, detail="אין הרשאה למחוק פנייה זו")
+        raise HTTPException(status_code=403, detail="אין הרשאה למחוק פניה זו")
     if not _is_open(offer):
-        raise HTTPException(status_code=409, detail="לא ניתן למחוק פנייה שאינה פתוחה")
-    repo.delete(request_id)
+        raise HTTPException(status_code=409, detail="לא ניתן לבטל פניה שאינה פתוחה")
+    # FIX-3: ביטול רך (status→CANCELLED) + סימון ההתאמות SUPERSEDED + התראה ללקוחות
+    # שהותאמו — במקום מחיקה פיזית ששוברת FK מול OfferMatches (§6.2/§13.1).
+    DealService(db).cancel_offer(request_id)
     return None
 
 
@@ -174,7 +177,7 @@ def send_offer(
     db: Session = Depends(get_db),
 ):
     """
-    שלב 3 — שומר את הפנייה (status=OPEN), מריץ את מנוע ההתאמה קדימה,
+    שלב 3 — שומר את הפניה (status=OPEN), מריץ את מנוע ההתאמה קדימה,
     יוצר רשומות OfferMatches (NOTIFIED) לכל לקוח שהותאם — הכול בטרנזקציה אחת —
     ומחזיר סיכום מדורג {offer_id, matched_count, matches}.
     """

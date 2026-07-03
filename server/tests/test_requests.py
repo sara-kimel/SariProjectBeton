@@ -100,8 +100,13 @@ def test_edit_and_delete_open(client, db):
     assert up.status_code == 200
     assert float(up.json()["quantity"]) == 4.5
 
+    # FIX-3: מחיקה = ביטול רך — 204, אך הבקשה נשמרת עם status=CANCELLED (לא נמחקת פיזית)
     assert client.delete(f"/concrete-requests/{rid}", headers=h).status_code == 204
-    assert client.get(f"/concrete-requests/{rid}", headers=h).status_code == 404
+    got = client.get(f"/concrete-requests/{rid}", headers=h)
+    assert got.status_code == 200
+    assert got.json()["status"] == "CANCELLED"
+    # ביטול חוזר על בקשה שאינה פתוחה -> 409
+    assert client.delete(f"/concrete-requests/{rid}", headers=h).status_code == 409
 
 
 def test_validation_rules(client, db):

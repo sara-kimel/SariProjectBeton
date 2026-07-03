@@ -21,7 +21,7 @@ export async function getOffer(id: number): Promise<ContractorOffer> {
   return data
 }
 
-// יצירת פנייה (שמירה בלבד בשלב 2 — המנוע לא רץ כאן)
+// יצירת פניה (שמירה בלבד בשלב 2 — המנוע לא רץ כאן)
 export async function createOffer(
   payload: ContractorOfferCreate,
 ): Promise<ContractorOffer> {
@@ -33,7 +33,7 @@ export async function deleteOffer(id: number): Promise<void> {
   await api.delete(`/contractor-offers/${id}`)
 }
 
-// שליחת פנייה — /send/ שומר את הפנייה, מריץ את מנוע ההתאמה (גיאו → מטרה/מפרט → כמות),
+// שליחת פניה — /send/ שומר את הפניה, מריץ את מנוע ההתאמה (גיאו → מטרה/מפרט → כמות),
 // יוצר רשומות OfferMatches, ומחזיר סיכום מדורג של הלקוחות שהותאמו.
 export async function sendOffer(payload: ContractorOfferCreate): Promise<OfferSendResult> {
   const { data } = await api.post<OfferSendResult>('/contractor-offers/send/', payload)

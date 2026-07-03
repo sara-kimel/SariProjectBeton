@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { getOffersByContractor } from '../api/offers'
 import type { ContractorOffer } from '../api/types'
 
-// לוח בקרה של קבלן — סיכום קצר + כניסה לפניות/פנייה חדשה.
+// לוח בקרה של קבלן — סיכום קצר + כניסה לפניות/פניה חדשה.
 export function ContractorDashboard() {
   const { user } = useAuth()
   const [offers, setOffers] = useState<ContractorOffer[]>([])
@@ -35,7 +35,7 @@ export function ContractorDashboard() {
         </div>
         <div className="cta-row">
           <Link to="/contractor/offers/new" className="btn btn-primary">
-            פנייה חדשה
+            פניה חדשה
           </Link>
           <Link to="/contractor/offers" className="btn">
             הפניות שלי

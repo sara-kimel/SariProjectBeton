@@ -177,12 +177,19 @@ class GeoCandidateService:
         lat = float(lat)
         lng = float(lng)
 
-        delta = radius_meters / 111000
+        # תיבת חיפוש (bounding box) ל-R-tree. מעלת רוחב ≈ 111 ק"מ בכל מקום,
+        # אך מעלת אורך מתכווצת ב-cos(lat) — לכן delta נפרד לציר האורך (FIX-6).
+        # בלי התיקון התיבה צרה מדי מזרח-מערב ומשמיטה מועמדים תקפים בתוך הרדיוס
+        # עוד לפני בדיקת ה-Haversine (בישראל ~32°: cos≈0.85 → ~8.5 ק"מ במקום 10).
+        delta_lat = radius_meters / 111000
+        cos_lat = math.cos(math.radians(lat))
+        # הגנה מפני קטבים (cos≈0): לא מחלקים באפס — נשתמש ברוחב-אורך מלא.
+        delta_lng = radius_meters / (111000 * cos_lat) if abs(cos_lat) > 1e-6 else 180.0
 
-        min_lat = lat - delta
-        max_lat = lat + delta
-        min_lng = lng - delta
-        max_lng = lng + delta
+        min_lat = lat - delta_lat
+        max_lat = lat + delta_lat
+        min_lng = lng - delta_lng
+        max_lng = lng + delta_lng
 
         candidate_ids = list(
             self.rtree.intersection((min_lng, min_lat, max_lng, max_lat))

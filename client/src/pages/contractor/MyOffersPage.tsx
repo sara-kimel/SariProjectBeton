@@ -33,7 +33,7 @@ export function MyOffersPage() {
       <div className="page-head">
         <h1>הפניות שלי</h1>
         <Link to="/contractor/offers/new" className="btn btn-primary">
-          פנייה חדשה
+          פניה חדשה
         </Link>
       </div>
 
@@ -45,7 +45,7 @@ export function MyOffersPage() {
         <div className="card empty-state">
           <p>עדיין לא פרסמת פניות.</p>
           <Link to="/contractor/offers/new" className="btn btn-primary">
-            פרסום פנייה ראשונה
+            פרסום פניה ראשונה
           </Link>
         </div>
       ) : (
@@ -53,7 +53,7 @@ export function MyOffersPage() {
           {offers.map((o) => (
             <Link key={o.request_id} to={`/contractor/offers/${o.request_id}`} className="card list-row">
               <div>
-                <strong>פנייה #{o.request_id}</strong>
+                <strong>פניה #{o.request_id}</strong>
                 <div className="muted">
                   {formatQuantity(o.quantity)} · {formatPrice(o.price)} · {formatCountdown(o.expiry_time, now)}
                 </div>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מדריך הרצה — תיקוני Project Sari</title>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body {
+  font-family: "Segoe UI", "Assistant", Arial, sans-serif;
+  direction: rtl; text-align: right;
+  max-width: 900px; margin: 0 auto; padding: 40px 28px 80px;
+  color: #1f2933; line-height: 1.7; background: #fff; font-size: 16px;
+}
+h1 { font-size: 2em; border-bottom: 3px solid #2563eb; padding-bottom: .3em; margin-top: .6em; }
+h2 { font-size: 1.4em; border-bottom: 1px solid #d0d7de; padding-bottom: .25em; margin-top: 1.8em; color: #1d4ed8; }
+p { margin: .7em 0; }
+a { color: #2563eb; text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { background: #f1f5f9; padding: .12em .4em; border-radius: 4px; font-size: .9em;
+  font-family: "Consolas", "Courier New", monospace; direction: ltr; unicode-bidi: embed; display: inline-block; }
+blockquote { border-right: 4px solid #f59e0b; background: #fffbeb; margin: 1em 0;
+  padding: .6em 1em; border-radius: 4px; color: #713f12; }
+.steps { counter-reset: step; list-style: none; padding: 0; }
+.steps li { counter-increment: step; position: relative; padding: .5em 3em .5em 0; margin: .4em 0; }
+.steps li::before { content: counter(step); position: absolute; right: 0; top: .35em;
+  width: 1.9em; height: 1.9em; background: #2563eb; color: #fff; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 700; font-size: .85em; }
+.cmd { background: #0f172a; color: #e2e8f0; padding: 14px 16px; border-radius: 8px;
+  margin: .5em 0 1.4em; direction: rtl; line-height: 1.5; position: relative; }
+.cmd .label { display: block; font-size: .78em; color: #93c5fd; margin-bottom: .4em; letter-spacing: .02em; }
+.cmd .line { display: block; font-family: "Consolas", "Courier New", monospace; font-size: .95em;
+  color: #f8fafc; user-select: all; word-break: break-word; }
+.cmd .line .path { direction: ltr; unicode-bidi: embed; color: #7dd3fc; }
+.phase { border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 18px 4px; margin: 1em 0;
+  background: #f8fafc; }
+.phase h3 { margin: 0 0 .2em; font-size: 1.12em; color: #0f172a; }
+.phase .tag { display: inline-block; font-size: .72em; font-weight: 700; padding: .12em .6em;
+  border-radius: 999px; margin-inline-start: .4em; vertical-align: middle; }
+.tag.p1 { background: #dbeafe; color: #1e40af; }
+.tag.p2 { background: #dcfce7; color: #166534; }
+.tag.opt { background: #f1f5f9; color: #475569; }
+.tag.done { background: #bbf7d0; color: #14532d; }
+.desc { color: #475569; font-size: .95em; margin: .1em 0 .3em; }
+.hint { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: .5em .9em; color: #1e3a5f; font-size: .95em; }
+hr { border: none; border-top: 1px solid #e2e8f0; margin: 2em 0; }
+.small { font-size: .88em; color: #64748b; }
+</style>
+</head>
+<body>
+
+<h1>מדריך הרצה — תיקוני Project Sari</h1>
+<p class="small">איך להפעיל אותי (Claude) על כל אחד משלבי התיקון שהוכנו. כל מה שצריך זה להעתיק שורה אחת ולהדביק בצ'אט חדש.</p>
+
+<blockquote><strong>הרקע בקצרה:</strong> נעשתה סקירת קוד מלאה, 6 התיקונים הקריטיים (P0) כבר בוצעו ואומתו (52 בדיקות ירוקות), ונותרו 8 שלבים (R1–R8) שמחכים לביצוע. כל שלב מתועד כפרומפט עצמאי בתיקייה <code>prompts/remediation/</code>.</blockquote>
+
+<h2>איך זה עובד — 3 צעדים</h2>
+<ol class="steps">
+  <li>פותחים <strong>צ'אט חדש</strong> של Claude Code <strong>בתוך תיקיית הפרויקט</strong> (Project Sari).</li>
+  <li>מעתיקים את <strong>שורת ההפעלה</strong> של השלב הרצוי (למטה) ומדביקים בצ'אט. זהו — לא צריך לכתוב שום דבר נוסף.</li>
+  <li>אני אקרא את קובץ הפרומפט + את ה-SPEC, אבצע את כל המשימות, <strong>אריץ את הבדיקות</strong>, ואעדכן את התיעוד. בסוף אקבל ממך אישור להמשיך לשלב הבא.</li>
+</ol>
+
+<hr>
+
+<h2>שורות ההפעלה — לפי שלב</h2>
+<p>העתיקי את השורה של השלב שאת רוצה. אפשר לבצע אחד בכל פעם (מומלץ) — כל שלב עצמאי.</p>
+
+<div class="phase">
+  <h3>R1 — ניקוי קוד מת + טיפול-שגיאות + שכבתיות <span class="tag p1">P1 הקשחה</span></h3>
+  <p class="desc">מוחק 5 קבצי קוד מת (כולל מוקש הכפלת מחיר ×2), מאחד הודעות שגיאה, מחזיר סדר שכבתי.</p>
+  <div class="cmd"><span class="label">העתיקי והדביקי בצ'אט חדש:</span><span class="line">בצע את השלב לפי <span class="path">prompts/remediation/R1-cleanup-and-errors.md</span></span></div>
+</div>
+
+<div class="phase">
+  <h3>R2 — הקשחת בסיס הנתונים <span class="tag p1">P1 הקשחה</span></h3>
+  <p class="desc">אינדקסים, אילוצי CHECK על סטטוס, NOT NULL, מיגרציות אידמפוטנטיות.</p>
+  <div class="cmd"><span class="label">העתיקי והדביקי בצ'אט חדש:</span><span class="line">בצע את השלב לפי <span class="path">prompts/remediation/R2-db-hardening.md</span></span></div>
+</div>
+
+<div class="phase">
+  <h3>R3 — הקשחת אבטחה <span class="tag p1">P1 הקשחה</span></h3>
+  <p class="desc">ביטול טוקנים בשינוי סיסמה, הקשחת rate-limit, סיסמת admin ממשתנה סביבה.</p>
+  <div class="cmd"><span class="label">העתיקי והדביקי בצ'אט חדש:</span><span class="line">בצע את השלב לפי <span class="path">prompts/remediation/R3-security-hardening.md</span></span></div>
+</div>
+
+<div class="phase">
+  <h3>R4 — הקשחת צד לקוח <span class="tag p1">P1 הקשחה</span></h3>
+  <p class="desc">מצבי טעינה/ריק/שגיאה בלוחות הבקרה, נגישות (aria-live), ניווט חכם בפקיעת סשן.</p>
+  <div class="cmd"><span class="label">העתיקי והדביקי בצ'אט חדש:</span><span class="line">בצע את השלב לפי <span class="path">prompts/remediation/R4-client-hardening.md</span></span></div>
+</div>
+
+<div class="phase">
+  <h3>R5 — מסכים חסרים והסכמת תנאים <span class="tag p2">P2 השלמה</span></h3>
+  <p class="desc">עמוד פרופיל/שינוי-סיסמה, מסכי היסטוריית עסקאות, הסכמת תנאי-שימוש בהרשמה. (חלופת המפה בוטלה — המפה עובדת.)</p>
+  <div class="cmd"><span class="label">העתיקי והדביקי בצ'אט חדש:</span><span class="line">בצע את השלב לפי <span class="path">prompts/remediation/R5-screens-and-consent.md</span></span></div>
+</div>
+
+<div class="phase">
+  <h3>R6 — השלמת בדיקות <span class="tag p2">P2 השלמה</span></h3>
+  <p class="desc">בדיקות לשלב-הניקוד של המנוע (כרגע 0 כיסוי!), גבולות כמות, בדיקות שליליות, בדיקות לקוח.</p>
+  <div class="cmd"><span class="label">העתיקי והדביקי בצ'אט חדש:</span><span class="line">בצע את השלב לפי <span class="path">prompts/remediation/R6-tests.md</span></span></div>
+</div>
+
+<div class="phase">
+  <h3>R7 — תשתית ותפעול <span class="tag p2">P2 השלמה</span></h3>
+  <p class="desc">ErrorBoundary, README אנושי, CI (GitHub Actions), Dockerfile.</p>
+  <div class="cmd"><span class="label">העתיקי והדביקי בצ'אט חדש:</span><span class="line">בצע את השלב לפי <span class="path">prompts/remediation/R7-infra.md</span></span></div>
+</div>
+
+<div class="phase">
+  <h3>R8 — דירוג, מוניטין ודיווח <span class="tag opt">מומלץ / עתידי</span></h3>
+  <p class="desc">דירוג הדדי אחרי עסקה, דיווח וחסימת משתמשים. אפשר לדחות בבטחה.</p>
+  <div class="cmd"><span class="label">העתיקי והדביקי בצ'אט חדש:</span><span class="line">בצע את השלב לפי <span class="path">prompts/remediation/R8-ratings-reputation.md</span></span></div>
+</div>
+
+<hr>
+
+<h2>מתכונים מהירים</h2>
+
+<p><strong>אם את רוצה רק את החובה לפני עלייה לאוויר (beta):</strong> הריצי את R1, R2, R3 ו-R6 (הקשחות שרת/DB/אבטחה + בדיקת הניקוד החסרה). את השאר אפשר אחר כך.</p>
+<div class="cmd"><span class="label">להרצה ברצף (אחד אחרי השני, עם אישור ביניהם):</span><span class="line">בצע לפי הסדר את השלבים R1, R2, R3 ו-R6 מהתיקייה <span class="path">prompts/remediation/</span> — שלב-שלב, ותעצור לאישור ביני כל שלב</span></div>
+
+<p><strong>אם את רוצה להריץ את כל ההקשחות (P1) ברצף:</strong></p>
+<div class="cmd"><span class="label">העתיקי והדביקי:</span><span class="line">בצע לפי הסדר את R1 עד R4 מהתיקייה <span class="path">prompts/remediation/</span>, שלב-שלב, עם הרצת הבדיקות בסוף כל שלב</span></div>
+
+<p><strong>אם את פשוט רוצה שאני אחליט ואבצע הכל לפי עדיפות:</strong></p>
+<div class="cmd"><span class="label">העתיקי והדביקי:</span><span class="line">עבור על prompts/remediation/README.md ובצע את כל השלבים הממתינים (R1–R7) לפי סדר העדיפות, שלב-שלב</span></div>
+
+<hr>
+
+<h2>טוב לדעת</h2>
+<p class="hint">
+  ✅ <strong>R0 כבר בוצע</strong> (6 התיקונים הקריטיים) — לא צריך להריץ אותו.<br>
+  🔒 <strong>כל שלב עצמאי ובטוח</strong> — מסתיים בהרצת חבילת הבדיקות, ולא ממשיך אם משהו נשבר.<br>
+  📄 <strong>המצב המלא</strong> מתועד תמיד ב-<code>SPEC.md</code> §18 (וגם ב-<code>SPEC.html</code> הקריא) — טבלה עם ✅/⬜ לכל פריט.<br>
+  💾 <strong>הזיכרון שלי מעודכן</strong>, כך שגם בצ'אט חדש לגמרי אני אזכור בדיוק איפה עצרנו.
+</p>
+
+<p class="small">נוצר עבור פרויקט "Beton" / שרי · המסמך הזה הוא רק תזכורת נוחה — כל התוכן האמיתי נמצא בקבצי <code>prompts/remediation/</code> ובקובץ <code>SPEC.md</code>.</p>
+
+</body>
+</html>

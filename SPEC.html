@@ -45,10 +45,10 @@ ul ul { margin: .2em 0; }
 </head>
 <body>
 <h1 id="פרויקט-שרי--beton--איפיון-מערכת-מלא">פרויקט שרי — "Beton" | איפיון מערכת מלא</h1>
-<blockquote>מסמך אפיון פונקציונלי וטכני. נגזר מהקוד הקיים בצד השרת + החלטות מוצר שאושרו. סטטוס: <strong>טיוטה ראשונה לאישור</strong>. סעיף <a href="#16-החלטות-פתוחות-לאישור">16 — החלטות פתוחות</a> מרכז את מה שדורש אישור/דיוק ממך.</blockquote>
+<blockquote>מסמך אפיון פונקציונלי וטכני. נגזר מהקוד הקיים בצד השרת + החלטות מוצר שאושרו. סטטוס: <strong>טיוטה ראשונה לאישור</strong>. סעיף <a href="#16-החלטות-פתוחות-לאישור">16 — החלטות פתוחות</a> מרכז את מה שדורש אישור/דיוק ממך. <strong>עודכן:</strong> ה-MVP (phases 0-6) נבנה בפועל; סעיף <a href="#18-סקירת-מצב-ותוכנית-תיקונים-remediation-plan">18 — סקירת מצב ותוכנית תיקונים</a> מרכז את תוכנית התיקונים שנגזרה מסקירת קוד מקיפה.</blockquote>
 <hr>
 <h2 id="תוכן-עניינים">תוכן עניינים</h2>
-<ol><li><a href="#1-סקירה-כללית-וחזון">סקירה כללית וחזון</a></li><li><a href="#2-תפקידים-ומשתמשים">תפקידים ומשתמשים</a></li><li><a href="#3-מושגי-יסוד-ומילון-מונחים">מושגי יסוד ומילון מונחים</a></li><li><a href="#4-הזרימה-המרכזית-end-to-end">הזרימה המרכזית (End-to-End)</a></li><li><a href="#5-מנוע-ההתאמה--לב-המערכת">מנוע ההתאמה — לב המערכת</a></li><li><a href="#6-מכונות-מצב-lifecycle">מכונות מצב (Lifecycle)</a></li><li><a href="#7-מודל-הנתונים-db">מודל הנתונים (DB)</a></li><li><a href="#8-שכבת-ה-api-צד-שרת">שכבת ה-API (צד שרת)</a></li><li><a href="#9-ארכיטקטורת-צד-שרת">ארכיטקטורת צד שרת</a></li><li><a href="#10-אבטחה-אימות-והרשאות">אבטחה, אימות והרשאות</a></li><li><a href="#11-מערכת-ההתראות">מערכת ההתראות</a></li><li><a href="#12-צד-לקוח-client">צד לקוח (Client)</a></li><li><a href="#13-מקרי-קצה--מקיף">מקרי קצה — מקיף</a></li><li><a href="#14-פערים-מהמצב-הקיים-ורשימת-ניקוי">פערים מהמצב הקיים ורשימת ניקוי</a></li><li><a href="#15-מפת-דרכים--שלבי-פיתוח">מפת דרכים / שלבי פיתוח</a></li><li><a href="#16-החלטות-פתוחות-לאישור">החלטות פתוחות לאישור</a></li><li><a href="#17-המלצות-נוספות-מה-עוד-כדאי-להוסיף">המלצות נוספות (מה עוד כדאי להוסיף)</a></li></ol>
+<ol><li><a href="#1-סקירה-כללית-וחזון">סקירה כללית וחזון</a></li><li><a href="#2-תפקידים-ומשתמשים">תפקידים ומשתמשים</a></li><li><a href="#3-מושגי-יסוד-ומילון-מונחים">מושגי יסוד ומילון מונחים</a></li><li><a href="#4-הזרימה-המרכזית-end-to-end">הזרימה המרכזית (End-to-End)</a></li><li><a href="#5-מנוע-ההתאמה--לב-המערכת">מנוע ההתאמה — לב המערכת</a></li><li><a href="#6-מכונות-מצב-lifecycle">מכונות מצב (Lifecycle)</a></li><li><a href="#7-מודל-הנתונים-db">מודל הנתונים (DB)</a></li><li><a href="#8-שכבת-ה-api-צד-שרת">שכבת ה-API (צד שרת)</a></li><li><a href="#9-ארכיטקטורת-צד-שרת">ארכיטקטורת צד שרת</a></li><li><a href="#10-אבטחה-אימות-והרשאות">אבטחה, אימות והרשאות</a></li><li><a href="#11-מערכת-ההתראות">מערכת ההתראות</a></li><li><a href="#12-צד-לקוח-client">צד לקוח (Client)</a></li><li><a href="#13-מקרי-קצה--מקיף">מקרי קצה — מקיף</a></li><li><a href="#14-פערים-מהמצב-הקיים-ורשימת-ניקוי">פערים מהמצב הקיים ורשימת ניקוי</a></li><li><a href="#15-מפת-דרכים--שלבי-פיתוח">מפת דרכים / שלבי פיתוח</a></li><li><a href="#16-החלטות-פתוחות-לאישור">החלטות פתוחות לאישור</a></li><li><a href="#17-המלצות-נוספות-מה-עוד-כדאי-להוסיף">המלצות נוספות (מה עוד כדאי להוסיף)</a></li><li><a href="#18-סקירת-מצב-ותוכנית-תיקונים-remediation-plan">סקירת מצב ותוכנית תיקונים (Remediation Plan)</a></li></ol>
 <hr>
 <h2 id="1-סקירה-כללית-וחזון">1. סקירה כללית וחזון</h2>
 <p><strong>הבעיה:</strong> בטון מוכן הוא מוצר מתכלה — לאחר יציקה נותרות לעיתים שאריות במערבל שחייבות להישפך תוך שעות ספורות אחרת הן מתקשות והופכות לפסולת. במקביל, קיימים לקוחות פרטיים/קטנים שצריכים <strong>כמות קטנה</strong> של בטון (גדר, יסוד קטן, רצפה) — כמות קטנה מדי מכדי להצדיק הזמנת מערבל שלם ממפעל.</p>
@@ -268,7 +268,7 @@ Users(all) ──&lt; Notifications</code></pre>
 <h3 id="136-נתונים-ומצב">13.6 נתונים ומצב</h3>
 <ul><li>מחיקת לקוח/קבלן עם בקשות/פניות פעילות → למנוע או ל-soft-delete (שלמות FK).</li><li>מחיקת ערך lookup בשימוש → למנוע (FK).</li><li>שדה <code>region</code> הלא-עקבי → להסיר/לגזור (ראה OD-3).</li><li>קונפליקט טיפוס <code>status</code> (DECIMAL מול NVARCHAR מול NULL) → להאחיד לפי מכונת המצב.</li></ul>
 <h3 id="137-גיאוגרפיהמפה">13.7 גיאוגרפיה/מפה</h3>
-<ul><li>טעינת Google Maps מאחורי NetFree (יירוט SSL) → ייתכן כשל טעינה; לספק חלופה/הודעה (מפתח ב-<code>client/.env</code>).</li><li>לחיצה מחוץ לגבולות הגיוניים → אזהרה.</li></ul>
+<ul><li>טעינת Google Maps — <strong>נפתרה (2026-07-03):</strong> המפה נטענת ועובדת (billing מופעל על מפתח תקין ב-<code>client/.env</code>). אין צורך בחלופה; לכל היותר הודעה ידידותית אם תיכשל טעינה.</li><li>לחיצה מחוץ לגבולות הגיוניים → אזהרה.</li></ul>
 <hr>
 <h2 id="14-פערים-מהמצב-הקיים-ורשימת-ניקוי">14. פערים מהמצב הקיים ורשימת ניקוי</h2>
 <p><strong>חובה לתקן (חוסם):</strong></p>
@@ -304,5 +304,53 @@ Users(all) ──&lt; Notifications</code></pre>
 <ul><li><strong>[מומלץ] עדכוני זמן אמת.</strong> ל-MVP polling להתראות/סטטוס; בהמשך WebSocket/SSE לחוויה מיידית (קריטי ללחץ הזמן).</li><li><strong>[חובה] אבטחת מפתח Google Maps.</strong> להוציא מהקוד, להגביל ל-referrer/דומיין, להפעיל רק את ה-APIs הנדרשים. לתעד את מגבלת NetFree (יירוט SSL) שעלולה לחסום טעינה.</li><li><strong>[חובה] Idempotency ומניעת כפילויות.</strong> מפתח idempotency על יצירת פנייה ועל אישור, למניעת שליחה כפולה/מרוץ.</li><li><strong>[מומלץ] Pagination/סינון/מיון</strong> בכל מסכי הרשימה (בקשות, פניות, התראות, משתמשים).</li><li><strong>[חובה] מיגרציות DB מסודרות (Alembic).</strong> במקום עריכה ידנית של <code>schema.sql</code> — לנהל שינויי סכימה בגרסאות.</li><li><strong>[מומלץ] בדיקות אוטומטיות.</strong> יחידה למנוע ההתאמה (הלוגיקה הקריטית: גיאו/מטרה/כמות/ניקוד) ואינטגרציה לתרחיש המרוץ (שני לקוחות מאשרים במקביל).</li><li><strong>[מומלץ] טיפול שגיאות ולוגים אחידים</strong> בצד שרת (כבר יש logger בסיסי) + מזהה בקשה (request id).</li><li><strong>[עתידי] קאשינג/אינדקס מתמיד</strong> למנוע ההתאמה בקנה מידה (ראה OD-10).</li></ul>
 <h3 id="174-תפעול-אבטחה-ותאימות">17.4 תפעול, אבטחה ותאימות</h3>
 <ul><li><strong>[חובה] Hashing לסיסמאות + JWT</strong> (כבר בסעיף 10) — התיקון הכי דחוף מבחינת אבטחה.</li><li><strong>[מומלץ] Rate limiting + הגנת brute-force</strong> על login/register.</li><li><strong>[מומלץ] מחיקה רכה (Soft delete) ויומן פעילות (Audit log)</strong> — לשמירת שלמות היסטוריה ועסקאות.</li><li><strong>[מומלץ] קונפיגורציית סביבות וסודות.</strong> <code>.env</code> לכל סביבה (dev/prod), הגבלת CORS בייצור, לא לשמור מפתחות בקוד.</li><li><strong>[עתידי] גיבויים אוטומטיים ל-DB וניטור (health/uptime).</strong></li></ul>
+<hr>
+<h2 id="18-סקירת-מצב-ותוכנית-תיקונים-remediation-plan">18. סקירת מצב ותוכנית תיקונים (Remediation Plan)</h2>
+<blockquote><strong>נוסף לאחר סקירת קוד מקיפה על ה-MVP הבנוי (phases 0-6).</strong> הסקירה בוצעה על-ידי מספר סוכני-בדיקה במקביל על 9 תת-מערכות (מנוע ההתאמה, אישור/מרוץ/התראות, אבטחה, מודל-DB, שכבת ה-API, לקוח, בדיקות, התאמה-ל-SPEC, בילד/תלויות). <strong>8 באגים עברו אימות אדוורסרי עצמאי — וכולם אושרו כאמיתיים.</strong> סעיף זה מרכז את <strong>תוכנית העבודה</strong> הנגזרת מהסקירה. סעיף <a href="#14-פערים-מהמצב-הקיים-ורשימת-ניקוי">14</a> מתאר את מצב ה<strong>פרה</strong>-MVP; סעיף זה מתאר את מה שנותר לתקן <strong>אחרי</strong> שה-MVP נבנה. סטטוס פריט: ⬜ מתוכנן · 🔧 בתהליך · ✅ בוצע.</blockquote>
+<h3 id="181-תיקונים-קריטיים-חובה-לפני-עלייה-לאוויר-p0">18.1 תיקונים קריטיים — חובה לפני עלייה לאוויר (P0)</h3>
+<p>✅ <strong>בוצע (2026-07-03): כל 6 תיקוני ה-P0 יושמו ואומתו — 52 בדיקות שרת ירוקות, כולל 3 בדיקות רגרסיה חדשות ל-FIX-2/FIX-3.</strong></p>
+<div class="table-wrap"><table>
+<thead><tr><th>מזהה</th><th>תיאור קצר</th><th>קובץ עיקרי</th><th>חומרה</th><th>סטטוס</th></tr></thead>
+<tbody>
+<tr><td>FIX-1</td><td>הרשאות: <code>/customers</code> ו-<code>/contractors</code> פתוחים לכל משתמש מאומת — IDOR + דליפת טלפונים המונית</td><td><code>controller/customer_controller.py</code>, <code>controller/contractor_controller.py</code></td><td>קריטי</td><td>✅</td></tr>
+<tr><td>FIX-2</td><td>מרוץ אישור: אין שער אטומי על הבקשה → double-booking (שני קבלנים מקבלים את פרטי הלקוח)</td><td><code>service/deal_service.py</code></td><td>גבוה</td><td>✅</td></tr>
+<tr><td>FIX-3</td><td>ביטול בקשה/פנייה = מחיקה קשה → קורס על FK של OfferMatches (500); <code>CANCELLED</code> לא ממומש</td><td><code>repository/concrete_request_repository.py</code> + בקרים</td><td>גבוה</td><td>✅</td></tr>
+<tr><td>FIX-4</td><td>מפתח JWT ברירת-מחדל לא בטוח, נטען בשקט → זיוף טוקן admin</td><td><code>config.py</code>, <code>.env.example</code></td><td>גבוה</td><td>✅</td></tr>
+<tr><td>FIX-5</td><td><code>DB_SERVER</code> מקובע ל-<code>localhost</code> ומתעלם ממשתנה הסביבה</td><td><code>config.py</code></td><td>בינוני</td><td>✅</td></tr>
+<tr><td>FIX-6</td><td>קדם-סינון R-tree לא מתוקן ל-<code>cos(lat)</code> → התאמות תקפות נופלות בקצה מזרח/מערב</td><td><code>service/matching_engine_service.py</code></td><td>בינוני</td><td>✅</td></tr>
+</tbody></table></div>
+<p><strong>מה ייעשה בכל פריט:</strong></p>
+<ul>
+<li><strong>FIX-1</strong> — רשימת-הכל וה-<code>POST</code> יוגבלו ל-<code>admin</code> בלבד; <code>GET/PUT/DELETE /{id}</code> יותרו רק לבעלים-או-admin (כדפוס <code>_owns_or_admin</code> הקיים כבר ב-<code>concrete_request_controller</code>); שדה <code>phone</code> יוסתר מה-Response למי שאינו בעלים/מנהל/צד-לעסקה-סגורה. <strong>מתקן חור אבטחה שמנטרל את מודל הסתרת פרטי-הקשר של §17.1 וסותר §10/§13.5.</strong></li>
+<li><strong>FIX-2</strong> — יתווסף שער אטומי סימטרי על הבקשה: <code>UPDATE ConcreteRequests SET status='CLOSED' WHERE request_id=:rid AND status='OPEN'</code> עם בדיקת <code>rowcount==0 → rollback + 409</code>; עדכון ה-<code>ACCEPTED</code> יותנה ב-<code>AND status='NOTIFIED'</code> (הגנת-עומק), תוך שמירת סדר הנעילה פנייה→בקשה למניעת deadlock.</li>
+<li><strong>FIX-3</strong> — המחיקה הקשה תוחלף במעבר סטטוס ל-<code>CANCELLED</code> (soft delete), ובאותה טרנזקציה יסומנו ההתאמות ה-<code>NOTIFIED</code> כ-<code>SUPERSEDED</code> + תישלח התראת "בוטל" לצד השני. כך נאכפות מכונות המצב §6.1/§6.2 ונמנעת שגיאת ה-FK 547.</li>
+<li><strong>FIX-4</strong> — תתווסף בדיקת אתחול (config/startup) שתעלה חריגה אם <code>JWT_SECRET</code> ריק / שווה לברירת-המחדל / קצר מדי, כשלא במצב פיתוח מפורש; הערך המפורש יוסר מ-<code>.env.example</code>.</li>
+<li><strong>FIX-5</strong> — החזרת הקריאה למשתנה סביבה: <code>DB_SERVER: str = os.getenv("DB_SERVER", "localhost")</code>, כדי שההגדרה ב-<code>.env</code> תפעל כמתועד.</li>
+<li><strong>FIX-6</strong> — חישוב <code>delta_lng = radius_meters / (111000 * cos(radians(lat)))</code> בנפרד מ-<code>delta_lat</code> (עם הגנה מ-<code>cos≈0</code>); סינון ה-Haversine המדויק נשאר כפי שהוא, כך שתיבת ה-R-tree תהיה על-קבוצה אמיתית של מעגל הרדיוס.</li>
+</ul>
+<h3 id="182-הקשחות-ואיכות-p1">18.2 הקשחות ואיכות (P1)</h3>
+<ul>
+<li><strong>ניקוי קוד מת ומלכודות</strong> — מחיקת <code>service/contractor_concrete_service.py</code> + <code>service/price_service.py</code> (⚠️ מכפילים מחיר ×2 בסתירה ל-§14 — מוקש רדום), <code>service/candidate_selector.py</code>, <code>service/region_service.py</code>, ו-<code>utils.py</code> (ריק); שינוי-שם/מיזוג של <code>service/contractor_matching_controller.py</code> (מכיל רק <code>TestService</code> — שם מטעה).</li>
+<li><strong>טיפול שגיאות אחיד (§8.7)</strong> — הוספת <code>exception_handler</code> ל-<code>Exception</code> (500 → <code>{"detail"}</code> בעברית) ול-<code>RequestValidationError</code> (422 → מחרוזת עברית מגובשת) ב-<code>app.py</code>; שקילת <code>request-id</code> בלוגים.</li>
+<li><strong>שכבתיות (§9)</strong> — העברת שאילתות ה-DB הישירות מ-<code>admin_controller</code> ל-repository/שירות סטטיסטיקה, ושימוש ב-<code>set_password_hash</code> במקום <code>commit</code> ישיר בתוך <code>auth_controller</code>.</li>
+<li><strong>הקשחת DB</strong> — העתקת כל אינדקסי מיגרציה <code>005</code> ל-<code>schema.sql</code>; הוספת <code>CHECK</code> על עמודות <code>status</code>; <code>customer_id</code>/<code>purpose_id</code> → <code>NOT NULL</code>; הפיכת מיגרציה <code>002</code> לאידמפוטנטית אמיתית; <code>DBCC CHECKIDENT(..., RESEED)</code> ב-<code>seed.py</code> לשימור טווחי ה-IDENTITY.</li>
+<li><strong>אבטחה נוספת</strong> — ביטול טוקנים בשינוי/איפוס סיסמה (<code>token_version</code>); הקשחת rate-limit (Redis/דרך proxy, <code>X-Forwarded-For</code> מהימן, הגבלת גודל); קריאת סיסמת ה-admin מ-env; צמצום enumeration של שמות משתמש; עטיפת ה-<code>insert</code> ל-<code>OfferMatches</code> ב-savepoint מול אילוץ ה-UNIQUE.</li>
+<li><strong>לקוח</strong> — הפרדת מצב "שגיאה" מ-"ריק" בלוחות הבקרה; <code>role="alert"</code>/<code>aria-live</code> להודעות (נגישות); החלפת ה-redirect הקשיח ב-401 בניווט SPA + שקילת refresh-token; רענון מונה פעמון ההתראות ב-focus ומיד לאחר קריאה; תיעוד סיכון אחסון הטוקן ב-<code>localStorage</code>.</li>
+</ul>
+<h3 id="183-השלמות-לפי-spec-p2">18.3 השלמות לפי SPEC (P2)</h3>
+<ul>
+<li><del>חלופת מיקום ללא מפה (§13.7)</del> — ✅ <strong>לא נדרש (2026-07-03):</strong> בעיית טעינת המפה נפתרה (הופעל billing על מפתח Google Maps תקין; נבדק ועובד מקצה-לקצה). אין צורך בחלופה ידנית.</li>
+<li><strong>מסך פרופיל/שינוי-סיסמה (§12.6)</strong> (ה-endpoint קיים, חסר UI) ו-<strong>מסכי היסטוריית עסקאות (§12.3/§12.4)</strong> בצד לקוח.</li>
+<li><strong>הסכמת תנאי-שימוש/מדיניות-פרטיות בהרשמה</strong> — [חובה] §17.1 (משתפים מספרי טלפון).</li>
+<li><strong>תשתית</strong> — <code>ErrorBoundary</code>, <code>README</code> אנושי עם הוראות הרצה, CI (GitHub Actions) + Dockerfile.</li>
+<li><strong>בדיקות</strong> — בדיקת שלב-הדירוג (ליבת המנוע — כרגע <strong>0 כיסוי</strong>!), גבולות סינון-הכמות, בדיקות שליליות (בקשה סגורה / decline-then-accept), בדיקת-מרוץ דטרמיניסטית (<code>threading.Barrier</code>), ובדיקות צד-לקוח (vitest + Testing-Library).</li>
+<li><strong>דירוג/מוניטין + דיווח/חסימה</strong> — [מומלץ] §17.1 (אמון בין זרים).</li>
+</ul>
+<h3 id="184-מה-אומת-כתקין-לשמר-לא-לגעת">18.4 מה אומת כתקין (לשמר, לא לגעת)</h3>
+<ul>
+<li>מנוע התאמה דו-כיווני נאמן ל-§5 (גיאו → מטרה→מפרט → כמות 90–100% → ניקוד <code>5×ותק − 1×דקות-נסיעה</code>), עם שמירת הפנייה/הבקשה + <code>OfferMatches</code> (NOTIFIED) + התראות <strong>בטרנזקציה אחת</strong>.</li>
+<li>אישור אטומי first-wins <strong>נכון</strong> בתרחיש הראשי של §13.3 (שני לקוחות מול פנייה אחת) — השער <code>UPDATE ... WHERE status='OPEN'</code> + <code>rowcount</code>.</li>
+<li>JWT + bcrypt (חיתוך 72B, <code>alg</code> מפורש), SQL פרמטרי לכל האורך, תפוגה עצלה (OD-11), RTL עם מאפיינים לוגיים, <code>.gitignore</code> נקי ללא סודות, ו-<code>rtree</code> קיים ב-<code>requirements.txt</code>.</li>
+</ul>
 </body>
 </html>

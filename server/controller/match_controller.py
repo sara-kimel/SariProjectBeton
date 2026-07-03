@@ -1,8 +1,8 @@
 """
 Controller להתאמות (OfferMatches) — שלבים 3–4.
-- GET  /matches/offer/{offer_id}     — ההתאמות של פנייה (לבעלים הקבלן או למנהל).
+- GET  /matches/offer/{offer_id}     — ההתאמות של פניה (לבעלים הקבלן או למנהל).
 - GET  /matches/request/{request_id} — ההתאמות של בקשה (לבעלים הלקוח או למנהל).
-- POST /matches/{id}/accept          — לקוח מאשר פנייה (אטומי — הראשון זוכה).
+- POST /matches/{id}/accept          — לקוח מאשר פניה (אטומי — הראשון זוכה).
 - POST /matches/{id}/decline         — לקוח דוחה התאמה.
 פרטי קשר (טלפון/שם) נחשפים רק לאחר סגירת העסקה (status=ACCEPTED, SPEC §17.1).
 """
@@ -51,12 +51,12 @@ def get_matches_for_offer(
     current: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """ההתאמות של פנייה — לקבלן הבעלים או למנהל בלבד."""
+    """ההתאמות של פניה — לקבלן הבעלים או למנהל בלבד."""
     offer = ContractorConcreteRequestRepository(db).get_by_id(offer_id)
     if not offer:
-        raise HTTPException(status_code=404, detail=f"פנייה {offer_id} לא נמצאה")
+        raise HTTPException(status_code=404, detail=f"פניה {offer_id} לא נמצאה")
     if not _owns_or_admin(current, "contractor", offer.contractor_id):
-        raise HTTPException(status_code=403, detail="אין הרשאה לצפות בהתאמות של פנייה זו")
+        raise HTTPException(status_code=403, detail="אין הרשאה לצפות בהתאמות של פניה זו")
     return _redact_contacts(OfferMatchRepository(db).get_view_for_offer(offer_id))
 
 
@@ -81,9 +81,9 @@ def accept_match(
     current: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """לקוח מאשר פנייה — אטומי, הראשון זוכה (OD-5). מחזיר את פרטי הקבלן ליצירת קשר."""
+    """לקוח מאשר פניה — אטומי, הראשון זוכה (OD-5). מחזיר את פרטי הקבלן ליצירת קשר."""
     if current["role"] != "customer":
-        raise HTTPException(status_code=403, detail="רק לקוח יכול לאשר פנייה")
+        raise HTTPException(status_code=403, detail="רק לקוח יכול לאשר פניה")
     return DealService(db).accept_match(match_id, current["id"])
 
 
@@ -93,7 +93,7 @@ def decline_match(
     current: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """לקוח דוחה התאמה (אינה משנה את הפנייה)."""
+    """לקוח דוחה התאמה (אינה משנה את הפניה)."""
     if current["role"] != "customer":
         raise HTTPException(status_code=403, detail="רק לקוח יכול לדחות התאמה")
     return DealService(db).decline_match(match_id, current["id"])

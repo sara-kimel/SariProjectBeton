@@ -2,7 +2,7 @@
 import { api } from './client'
 import type { MatchView, DealResult } from './types'
 
-// ההתאמות של פנייה (לקבלן הבעלים) — הלקוחות שהותאמו, מדורג לפי ניקוד.
+// ההתאמות של פניה (לקבלן הבעלים) — הלקוחות שהותאמו, מדורג לפי ניקוד.
 export async function getMatchesForOffer(offerId: number): Promise<MatchView[]> {
   const { data } = await api.get<MatchView[]>(`/matches/offer/${offerId}`)
   return data
@@ -14,7 +14,7 @@ export async function getMatchesForRequest(requestId: number): Promise<MatchView
   return data
 }
 
-// לקוח מאשר פנייה (אטומי — הראשון זוכה). מחזיר את פרטי הקבלן ליצירת קשר.
+// לקוח מאשר פניה (אטומי — הראשון זוכה). מחזיר את פרטי הקבלן ליצירת קשר.
 export async function acceptMatch(matchId: number): Promise<DealResult> {
   const { data } = await api.post<DealResult>(`/matches/${matchId}/accept`)
   return data

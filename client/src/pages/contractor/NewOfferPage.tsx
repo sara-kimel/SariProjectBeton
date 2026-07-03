@@ -38,6 +38,28 @@ function toMap<T extends { id: number }>(items: T[], pick: (t: T) => string | nu
   return m
 }
 
+// אפשרויות שעה (00–23) ודקות (00–59) — בורר 24 שעות, ללא AM/PM וללא תאריך.
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
+const MINUTE_OPTIONS = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'))
+
+// ברירת מחדל סבירה: בעוד שעה וחצי מעכשיו.
+function defaultExpiryParts() {
+  const d = new Date(Date.now() + 90 * 60 * 1000)
+  return {
+    hour: String(d.getHours()).padStart(2, '0'),
+    minute: String(d.getMinutes()).padStart(2, '0'),
+  }
+}
+
+// מועד התפוגה = המופע הקרוב של HH:MM מעכשיו. אם השעה כבר עברה היום — מדובר במחר
+// (מטפל גם במעבר חצות). כך אין צורך בבחירת תאריך, והתוצאה תמיד עתידית.
+function buildExpiryDate(hour: string, minute: string): Date {
+  const exp = new Date()
+  exp.setHours(Number(hour), Number(minute), 0, 0)
+  if (exp.getTime() <= Date.now()) exp.setDate(exp.getDate() + 1)
+  return exp
+}
+
 export function NewOfferPage() {
   const navigate = useNavigate()
 
@@ -51,7 +73,8 @@ export function NewOfferPage() {
   const [quantity, setQuantity] = useState('')
   const [price, setPrice] = useState('')
   const [address, setAddress] = useState('')
-  const [expiry, setExpiry] = useState('')
+  const [expiryHour, setExpiryHour] = useState(() => defaultExpiryParts().hour)
+  const [expiryMin, setExpiryMin] = useState(() => defaultExpiryParts().minute)
   const [location, setLocation] = useState<LatLng | null>(null)
 
   const [submitting, setSubmitting] = useState(false)
@@ -80,22 +103,33 @@ export function NewOfferPage() {
     }))
   }, [concreteTypes, purposes, strengths, reliants, stones])
 
+  // תצוגה מקדימה של מועד התפוגה שנבחר ("היום/מחר בשעה HH:MM") — כדי שברור מתי יפוג.
+  const expiryPreview = useMemo(() => {
+    const exp = buildExpiryDate(expiryHour, expiryMin)
+    const isTomorrow = exp.toDateString() !== new Date().toDateString()
+    return `${isTomorrow ? 'מחר' : 'היום'} בשעה ${expiryHour}:${expiryMin}`
+  }, [expiryHour, expiryMin])
+
+  // מציג שגיאה וגם גולל אותה לתצוגה — באנר השגיאה בראש העמוד, וכפתור השליחה
+  // נמצא מתחת למפה; בלי הגלילה נראה כאילו "כלום לא קרה" בעת שדה חובה חסר.
+  function fail(message: string) {
+    setError(message)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setError('')
 
-    if (!concreteId) return setError('יש לבחור סוג בטון')
-    if (!quantity || Number(quantity) <= 0) return setError('יש להזין כמות גדולה מ-0')
-    if (!location) return setError('יש לבחור מיקום על המפה')
-    if (!expiry) return setError('יש להזין זמן תפוגה')
-    const expiryDate = new Date(expiry)
-    if (Number.isNaN(expiryDate.getTime()) || expiryDate.getTime() <= Date.now()) {
-      return setError('זמן התפוגה חייב להיות עתידי')
-    }
+    if (!concreteId) return fail('יש לבחור סוג בטון')
+    if (!quantity || Number(quantity) <= 0) return fail('יש להזין כמות גדולה מ-0')
+    if (!location) return fail('יש לבחור מיקום על המפה')
+    // זמן תפוגה = השעה שנבחרה (המופע הקרוב שלה) — תמיד עתידי, אין צורך בוולידציה.
+    const expiryDate = buildExpiryDate(expiryHour, expiryMin)
 
     setSubmitting(true)
     try {
-      // /send/ שומר את הפנייה ומריץ מיד את מנוע ההתאמה — מנווטים לפרטי הפנייה
+      // /send/ שומר את הפניה ומריץ מיד את מנוע ההתאמה — מנווטים לפרטי הפניה
       // כדי להציג את הלקוחות שהותאמו.
       const result = await sendOffer({
         concrete_id: Number(concreteId),
@@ -109,7 +143,7 @@ export function NewOfferPage() {
       })
       navigate(`/contractor/offers/${result.offer_id}`, { replace: true })
     } catch (err) {
-      setError(extractErrorMessage(err))
+      fail(extractErrorMessage(err))
     } finally {
       setSubmitting(false)
     }
@@ -117,7 +151,7 @@ export function NewOfferPage() {
 
   return (
     <div>
-      <h1>פנייה חדשה</h1>
+      <h1>פניה חדשה</h1>
       <p className="subtitle">פרסום שאריות בטון — בחר/י סוג בטון, כמות, מחיר, תפוגה ומיקום</p>
 
       {error && <div className="alert alert-error">{error}</div>}
@@ -162,13 +196,32 @@ export function NewOfferPage() {
           </div>
 
           <div className="form-row">
-            <label htmlFor="expiry">זמן תפוגה *</label>
-            <input
-              id="expiry"
-              type="datetime-local"
-              value={expiry}
-              onChange={(e) => setExpiry(e.target.value)}
-            />
+            <label htmlFor="expiryHour">זמן תפוגה — עד איזו שעה הבטון פעיל *</label>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, direction: 'ltr' }}>
+              <select
+                id="expiryHour"
+                value={expiryHour}
+                onChange={(e) => setExpiryHour(e.target.value)}
+                aria-label="שעה"
+                style={{ width: 80 }}
+              >
+                {HOUR_OPTIONS.map((h) => (
+                  <option key={h} value={h}>{h}</option>
+                ))}
+              </select>
+              <span style={{ fontWeight: 700 }}>:</span>
+              <select
+                value={expiryMin}
+                onChange={(e) => setExpiryMin(e.target.value)}
+                aria-label="דקות"
+                style={{ width: 80 }}
+              >
+                {MINUTE_OPTIONS.map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            </div>
+            <div className="hint">הפניה תפוג {expiryPreview}</div>
           </div>
 
           <div className="form-row">
@@ -178,14 +231,20 @@ export function NewOfferPage() {
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="רחוב, עיר"
+              placeholder="הקלד/י כתובת או בחר/י על המפה — יתמלא אוטומטית"
             />
           </div>
         </div>
 
         <div className="form-row">
           <label>מיקום על המפה *</label>
-          <MapPicker value={location} onChange={setLocation} />
+          <MapPicker
+            value={location}
+            onChange={setLocation}
+            address={address}
+            onAddressResolved={setAddress}
+            onLocationResolved={setLocation}
+          />
           <div className="coords-line">
             {location
               ? `נבחר: ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`
@@ -194,7 +253,7 @@ export function NewOfferPage() {
         </div>
 
         <button type="submit" className="btn btn-primary" disabled={submitting}>
-          {submitting ? 'שולח…' : 'פרסום פנייה'}
+          {submitting ? 'שולח…' : 'פרסום פניה'}
         </button>
       </form>
     </div>

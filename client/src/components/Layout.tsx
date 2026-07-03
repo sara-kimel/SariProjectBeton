@@ -33,7 +33,7 @@ export function Layout() {
           {user?.role === 'contractor' && (
             <>
               <NavLink to="/contractor/offers">הפניות שלי</NavLink>
-              <NavLink to="/contractor/offers/new">פנייה חדשה</NavLink>
+              <NavLink to="/contractor/offers/new">פניה חדשה</NavLink>
             </>
           )}
           {user?.role === 'admin' && (

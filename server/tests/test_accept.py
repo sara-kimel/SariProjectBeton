@@ -194,3 +194,95 @@ def test_concurrent_accept_first_wins(scene):
     assert _scalar(db, "SELECT [status] FROM ContractorConcreteRequests WHERE request_id=:o", o=d["offer"]) == "CLOSED"
     accepted = _scalar(db, "SELECT COUNT(*) FROM OfferMatches WHERE offer_id=:o AND [status]='ACCEPTED'", o=d["offer"])
     assert accepted == 1
+
+
+# =========================================================================
+# FIX-2 — מרוץ double-booking: לקוח יחיד + בקשה אחת שהותאמה לשתי פניות שונות.
+# בלי שער אטומי על הבקשה, שני אישורים במקביל היו סוגרים את שתי הפניות ושני
+# קבלנים היו מקבלים את פרטי הלקוח.
+# =========================================================================
+def test_concurrent_double_booking_prevented(db):
+    _wipe(db)
+    con = _mk_contractor(db, "pytest4_conDB", "052-3000000")
+    cust = _mk_customer(db, "pytest4_cDB", "050-3333333")
+    o1 = _mk_offer(db, con, "DB1", _now() + timedelta(hours=5))
+    o2 = _mk_offer(db, con, "DB2", _now() + timedelta(hours=5))
+    req = _mk_request(db, cust, "RDB")
+    m1 = _mk_match(db, o1, req, cust)
+    m2 = _mk_match(db, o2, req, cust)
+    db.commit()
+
+    def worker(match_id):
+        s = SessionLocal()
+        try:
+            DealService(s).accept_match(match_id, cust)
+            return "ok"
+        except HTTPException as e:
+            return e.status_code
+        finally:
+            s.close()
+
+    try:
+        with ThreadPoolExecutor(max_workers=2) as ex:
+            f1 = ex.submit(worker, m1)
+            f2 = ex.submit(worker, m2)
+            results = [f1.result(), f2.result()]
+
+        assert results.count("ok") == 1, f"בדיוק אישור אחד היה אמור להצליח, קיבלנו {results}"
+        assert 409 in results, f"המפסיד היה אמור לקבל 409, קיבלנו {results}"
+
+        db.commit()
+        # הבקשה נסגרה; בדיוק פנייה אחת CLOSED (השנייה נשארה OPEN) — לא double-booking
+        assert _scalar(db, "SELECT [status] FROM ConcreteRequests WHERE request_id=:r", r=req) == "CLOSED"
+        closed_offers = _scalar(
+            db,
+            "SELECT COUNT(*) FROM ContractorConcreteRequests "
+            "WHERE request_id IN (:o1,:o2) AND [status]='CLOSED'",
+            o1=o1, o2=o2,
+        )
+        assert closed_offers == 1, "בדיוק פנייה אחת אמורה להיסגר (מניעת double-booking)"
+        accepted = _scalar(db, "SELECT COUNT(*) FROM OfferMatches WHERE request_id=:r AND [status]='ACCEPTED'", r=req)
+        assert accepted == 1
+    finally:
+        _wipe(db)
+
+
+# =========================================================================
+# FIX-3 — ביטול (soft) של פנייה/בקשה שיש להן התאמות: בעבר מחיקה פיזית נכשלה
+# על FK של OfferMatches (500). כעת: status→CANCELLED, ההתאמות→SUPERSEDED,
+# והלקוח מקבל התראה על ביטול הפנייה.
+# =========================================================================
+def test_cancel_offer_with_matches_soft(db):
+    _wipe(db)
+    con = _mk_contractor(db, "pytest4_conCXO", "052-7000000")
+    cust = _mk_customer(db, "pytest4_cCXO", "050-7777777")
+    offer = _mk_offer(db, con, "CXO", _now() + timedelta(hours=5))
+    req = _mk_request(db, cust, "CXR")
+    m = _mk_match(db, offer, req, cust)
+    db.commit()
+    try:
+        DealService(db).cancel_offer(offer)  # בעבר: FK 547 -> 500
+        db.commit()
+        assert _scalar(db, "SELECT [status] FROM ContractorConcreteRequests WHERE request_id=:o", o=offer) == "CANCELLED"
+        assert _scalar(db, "SELECT [status] FROM OfferMatches WHERE id=:m", m=m) == "SUPERSEDED"
+        notes = NotificationRepository(db).get_for_user(cust, "customer")
+        assert any(n.type == "OFFER_CANCELLED" for n in notes)
+    finally:
+        _wipe(db)
+
+
+def test_cancel_request_with_matches_soft(db):
+    _wipe(db)
+    con = _mk_contractor(db, "pytest4_conCRQ", "052-8000000")
+    cust = _mk_customer(db, "pytest4_cCRQ", "050-8888888")
+    offer = _mk_offer(db, con, "CR2O", _now() + timedelta(hours=5))
+    req = _mk_request(db, cust, "CR2R")
+    m = _mk_match(db, offer, req, cust)
+    db.commit()
+    try:
+        DealService(db).cancel_request(req)  # בעבר: FK 547 -> 500
+        db.commit()
+        assert _scalar(db, "SELECT [status] FROM ConcreteRequests WHERE request_id=:r", r=req) == "CANCELLED"
+        assert _scalar(db, "SELECT [status] FROM OfferMatches WHERE id=:m", m=m) == "SUPERSEDED"
+    finally:
+        _wipe(db)

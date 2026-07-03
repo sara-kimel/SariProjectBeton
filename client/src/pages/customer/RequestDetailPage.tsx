@@ -134,7 +134,7 @@ export function RequestDetailPage() {
               return (
                 <div key={m.id} className="card list-row">
                   <div>
-                    <strong>פנייה #{m.offer_id}</strong>
+                    <strong>פניה #{m.offer_id}</strong>
                     <div className="muted">
                       {formatQuantity(m.offer_quantity)} · {formatPrice(m.offer_price)} ·{' '}
                       {formatDistance(m.distance_m)}
@@ -142,7 +142,7 @@ export function RequestDetailPage() {
                     </div>
                     {isAccepted && (
                       <div className="contact-box">
-                        ✅ אישרת פנייה זו. ליצירת קשר — קבלן: {m.contractor_name || '—'} · טלפון:{' '}
+                        ✅ אישרת פניה זו. ליצירת קשר — קבלן: {m.contractor_name || '—'} · טלפון:{' '}
                         <a href={`tel:${m.contractor_phone ?? ''}`}>{m.contractor_phone || '—'}</a>
                       </div>
                     )}

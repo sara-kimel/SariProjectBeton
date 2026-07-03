@@ -14,7 +14,7 @@ import {
   formatDistance,
 } from '../../utils/format'
 
-// פרטי פנייה בודדת + רשימת הלקוחות שהותאמו (מדורג לפי ניקוד — שלב 3).
+// פרטי פניה בודדת + רשימת הלקוחות שהותאמו (מדורג לפי ניקוד — שלב 3).
 export function OfferDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -30,7 +30,7 @@ export function OfferDetailPage() {
       .then(setOffer)
       .catch((err) => setError(extractErrorMessage(err)))
       .finally(() => setLoading(false))
-    // ההתאמות נטענות בנפרד; כשל בשליפתן לא מפיל את מסך הפנייה.
+    // ההתאמות נטענות בנפרד; כשל בשליפתן לא מפיל את מסך הפניה.
     getMatchesForOffer(Number(id))
       .then(setMatches)
       .catch(() => setMatches([]))
@@ -38,7 +38,7 @@ export function OfferDetailPage() {
 
   async function handleDelete() {
     if (!offer) return
-    if (!window.confirm('לבטל את הפנייה?')) return
+    if (!window.confirm('לבטל את הפניה?')) return
     setDeleting(true)
     setError('')
     try {
@@ -52,7 +52,7 @@ export function OfferDetailPage() {
 
   if (loading) return <div className="card">טוען…</div>
   if (error && !offer) return <div className="alert alert-error">{error}</div>
-  if (!offer) return <div className="card">הפנייה לא נמצאה</div>
+  if (!offer) return <div className="card">הפניה לא נמצאה</div>
 
   const isOpen = (offer.status ?? 'OPEN').toUpperCase() === 'OPEN'
   // ההתאמה שאושרה (אם קיימת) — נחשפים בה פרטי הקשר של הלקוח
@@ -61,7 +61,7 @@ export function OfferDetailPage() {
   return (
     <div>
       <div className="page-head">
-        <h1>פנייה #{offer.request_id}</h1>
+        <h1>פניה #{offer.request_id}</h1>
         <span className={`badge ${statusClass(offer.status)}`}>{statusLabel(offer.status)}</span>
       </div>
 
@@ -92,7 +92,7 @@ export function OfferDetailPage() {
         <div className="card">
           <h2>העסקה נסגרה 🎉</h2>
           <div className="contact-box">
-            לקוח אישר את הפנייה. ליצירת קשר — {accepted.customer_name || 'לקוח'} · טלפון:{' '}
+            לקוח אישר את הפניה. ליצירת קשר — {accepted.customer_name || 'לקוח'} · טלפון:{' '}
             <a href={`tel:${accepted.customer_phone ?? ''}`}>{accepted.customer_phone || '—'}</a>
           </div>
         </div>
@@ -101,7 +101,7 @@ export function OfferDetailPage() {
       <div className="card">
         <h2>לקוחות שהותאמו ({matches.length})</h2>
         {matches.length === 0 ? (
-          <p className="muted">לא נמצאו לקוחות מתאימים לפנייה זו.</p>
+          <p className="muted">לא נמצאו לקוחות מתאימים לפניה זו.</p>
         ) : (
           <div className="list">
             {matches.map((m) => (
@@ -119,7 +119,7 @@ export function OfferDetailPage() {
           </div>
         )}
         {matches.length > 0 && !accepted && (
-          <p className="muted">פרטי הלקוח ייחשפו לאחר שאחד הלקוחות יאשר את הפנייה.</p>
+          <p className="muted">פרטי הלקוח ייחשפו לאחר שאחד הלקוחות יאשר את הפניה.</p>
         )}
       </div>
 
@@ -129,7 +129,7 @@ export function OfferDetailPage() {
         </Link>
         {isOpen && (
           <button type="button" className="btn btn-ghost" onClick={handleDelete} disabled={deleting}>
-            {deleting ? 'מבטל…' : 'ביטול פנייה'}
+            {deleting ? 'מבטל…' : 'ביטול פניה'}
           </button>
         )}
       </div>

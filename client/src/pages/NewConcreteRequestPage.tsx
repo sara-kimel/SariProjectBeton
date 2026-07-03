@@ -100,14 +100,20 @@ export function NewConcreteRequestPage() {
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="רחוב, עיר"
+              placeholder="הקלד/י כתובת או בחר/י על המפה — יתמלא אוטומטית"
             />
           </div>
         </div>
 
         <div className="form-row">
           <label>מיקום על המפה *</label>
-          <MapPicker value={location} onChange={setLocation} />
+          <MapPicker
+            value={location}
+            onChange={setLocation}
+            address={address}
+            onAddressResolved={setAddress}
+            onLocationResolved={setLocation}
+          />
           <div className="coords-line">
             {location
               ? `נבחר: ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`

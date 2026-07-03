@@ -148,7 +148,7 @@ export interface ConcreteType {
 }
 
 // ---------- התאמות (OfferMatches) — שלב 3 ----------
-// תצוגת התאמה מועשרת: רשומת ההתאמה + צד הבקשה (לקוח) + צד הפנייה (קבלן).
+// תצוגת התאמה מועשרת: רשומת ההתאמה + צד הבקשה (לקוח) + צד הפניה (קבלן).
 export interface MatchView {
   id: number
   offer_id: number
@@ -165,7 +165,7 @@ export interface MatchView {
   request_purpose_id?: number | null
   request_date?: string | null
   request_status?: string | null
-  // צד הפנייה
+  // צד הפניה
   offer_quantity?: number | null
   offer_price?: string | null
   offer_address?: string | null

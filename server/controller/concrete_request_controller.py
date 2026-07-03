@@ -14,6 +14,7 @@ from dto.concrete_request_dto import ConcreteRequestCreateDTO, ConcreteRequestRe
 from repository.concrete_request_repository import ConcreteRequestRepository
 from repository.purpose_repository import PurposeRepository
 from service.match_service import MatchService
+from service.deal_service import DealService
 from service.security import get_current_user
 
 router = APIRouter(
@@ -123,6 +124,8 @@ def delete_request(
     if not _owns_or_admin(current, req.customer_id):
         raise HTTPException(status_code=403, detail="אין הרשאה למחוק בקשה זו")
     if not _is_open(req):
-        raise HTTPException(status_code=409, detail="לא ניתן למחוק בקשה שאינה פתוחה")
-    repo.delete(request_id)
+        raise HTTPException(status_code=409, detail="לא ניתן לבטל בקשה שאינה פתוחה")
+    # FIX-3: ביטול רך (status→CANCELLED) במקום מחיקה פיזית — נמנעת שגיאת FK מול
+    # OfferMatches, נשמרת מכונת המצב (§6.1) וההתאמות הפעילות מסומנות SUPERSEDED.
+    DealService(db).cancel_request(request_id)
     return None

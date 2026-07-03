@@ -53,9 +53,9 @@ class DealService:
                 {"oid": offer_id},
             ).mappings().first()
             if offer is None:
-                raise HTTPException(status_code=404, detail="הפנייה לא נמצאה")
+                raise HTTPException(status_code=404, detail="הפניה לא נמצאה")
 
-            # תפוגה עצלה (OD-11): אם הפנייה פגה — סמן EXPIRED (+ ההתאמות שלה) והחזר 410
+            # תפוגה עצלה (OD-11): אם הפניה פגה — סמן EXPIRED (+ ההתאמות שלה) והחזר 410
             expiry = offer["expiry_time"]
             if expiry is not None and expiry <= _now_naive_utc():
                 db.execute(
@@ -85,20 +85,28 @@ class DealService:
                 db.rollback()
                 raise HTTPException(status_code=409, detail="ההצעה כבר נתפסה")
 
-            # סגירת הבקשה של הלקוח המאשר
-            db.execute(
-                text("UPDATE ConcreteRequests SET [status]='CLOSED' WHERE request_id=:rid"),
+            # ==== שער אטומי שני (first-wins) על הבקשה — FIX-2 ====
+            # מונע double-booking: לקוח יחיד שהותאם לשתי פניות (M1,M2 → O1,O2) ולוחץ
+            # "אישור" על שתיהן במקביל עובר את שער הפניה בשתיהן (שורות שונות, אין נעילה
+            # משותפת). בלי שער על הבקשה — שתי העסקאות נסגרות ושני קבלנים מקבלים את הלקוח.
+            # סדר הנעילה נשמר (פניה ואז בקשה) כדי למנוע deadlock.
+            req_gate = db.execute(
+                text("UPDATE ConcreteRequests SET [status]='CLOSED' "
+                     "WHERE request_id=:rid AND [status]='OPEN'"),
                 {"rid": request_id},
             )
+            if req_gate.rowcount == 0:
+                db.rollback()
+                raise HTTPException(status_code=409, detail="הבקשה כבר נסגרה")
 
-            # ההתאמה הזו -> ACCEPTED
+            # ההתאמה הזו -> ACCEPTED (מותנה NOTIFIED — הגנת עומק מפני דריסת SUPERSEDED)
             db.execute(
                 text("UPDATE OfferMatches SET [status]='ACCEPTED', responded_at=SYSDATETIME() "
-                     "WHERE id=:mid"),
+                     "WHERE id=:mid AND [status]='NOTIFIED'"),
                 {"mid": match_id},
             )
 
-            # איסוף שאר המותאמים של אותה פנייה (להתראת "נתפסה") ואז SUPERSEDED
+            # איסוף שאר המותאמים של אותה פניה (להתראת "נתפסה") ואז SUPERSEDED
             others = db.execute(
                 text("SELECT id, customer_id, request_id FROM OfferMatches "
                      "WHERE offer_id=:oid AND id<>:mid AND [status]='NOTIFIED'"),
@@ -110,7 +118,7 @@ class DealService:
                 {"oid": offer_id, "mid": match_id},
             )
 
-            # שאר ההתאמות הפעילות של אותה בקשה (בחרה פנייה אחרת) -> SUPERSEDED
+            # שאר ההתאמות הפעילות של אותה בקשה (בחרה פניה אחרת) -> SUPERSEDED
             db.execute(
                 text("UPDATE OfferMatches SET [status]='SUPERSEDED' "
                      "WHERE request_id=:rid AND id<>:mid AND [status]='NOTIFIED'"),
@@ -156,7 +164,7 @@ class DealService:
                 "request_status": "CLOSED",
                 "contact_name": contact_name,
                 "contact_phone": contact_phone,
-                "message": "אישרת את הפנייה! פרטי הקבלן ליצירת קשר מוצגים כעת.",
+                "message": "אישרת את הפניה! פרטי הקבלן ליצירת קשר מוצגים כעת.",
             }
         except HTTPException:
             db.rollback()
@@ -166,7 +174,7 @@ class DealService:
             raise
 
     # -------------------------------------------------------------------
-    # דחיית התאמה — לא נוגעת בפנייה
+    # דחיית התאמה — לא נוגעת בפניה
     # -------------------------------------------------------------------
     def decline_match(self, match_id: int, customer_id: int) -> dict:
         db = self.db
@@ -198,8 +206,79 @@ class DealService:
                 "request_status": None,
                 "contact_name": None,
                 "contact_phone": None,
-                "message": "דחית את הפנייה.",
+                "message": "דחית את הפניה.",
             }
+        except HTTPException:
+            db.rollback()
+            raise
+        except Exception:
+            db.rollback()
+            raise
+
+    # -------------------------------------------------------------------
+    # ביטול בקשה (soft) — FIX-3
+    # status→CANCELLED + ההתאמות ה-NOTIFIED שלה -> SUPERSEDED, בטרנזקציה אחת.
+    # מחליף את המחיקה הפיזית ששברה FK מול OfferMatches (SPEC §6.1).
+    # -------------------------------------------------------------------
+    def cancel_request(self, request_id: int) -> None:
+        db = self.db
+        try:
+            gate = db.execute(
+                text("UPDATE ConcreteRequests SET [status]='CANCELLED' "
+                     "WHERE request_id=:rid AND [status]='OPEN'"),
+                {"rid": request_id},
+            )
+            if gate.rowcount == 0:
+                db.rollback()
+                raise HTTPException(status_code=409, detail="לא ניתן לבטל בקשה שאינה פתוחה")
+            # ההתאמות הפעילות של הבקשה -> SUPERSEDED (הלקוח משך את הבקשה)
+            db.execute(
+                text("UPDATE OfferMatches SET [status]='SUPERSEDED' "
+                     "WHERE request_id=:rid AND [status]='NOTIFIED'"),
+                {"rid": request_id},
+            )
+            db.commit()
+        except HTTPException:
+            db.rollback()
+            raise
+        except Exception:
+            db.rollback()
+            raise
+
+    # -------------------------------------------------------------------
+    # ביטול פניה (soft) — FIX-3
+    # status→CANCELLED + ההתאמות ה-NOTIFIED -> SUPERSEDED + התראת "בוטלה"
+    # ללקוחות שהותאמו, הכול בטרנזקציה אחת (SPEC §6.2/§13.1).
+    # -------------------------------------------------------------------
+    def cancel_offer(self, offer_id: int) -> None:
+        db = self.db
+        try:
+            gate = db.execute(
+                text("UPDATE ContractorConcreteRequests SET [status]='CANCELLED' "
+                     "WHERE request_id=:oid AND [status]='OPEN'"),
+                {"oid": offer_id},
+            )
+            if gate.rowcount == 0:
+                db.rollback()
+                raise HTTPException(status_code=409, detail="לא ניתן לבטל פניה שאינה פתוחה")
+            # איסוף הלקוחות המותאמים הפעילים (להתראה) לפני עדכון ההתאמות
+            affected = db.execute(
+                text("SELECT customer_id, request_id FROM OfferMatches "
+                     "WHERE offer_id=:oid AND [status]='NOTIFIED'"),
+                {"oid": offer_id},
+            ).mappings().all()
+            db.execute(
+                text("UPDATE OfferMatches SET [status]='SUPERSEDED' "
+                     "WHERE offer_id=:oid AND [status]='NOTIFIED'"),
+                {"oid": offer_id},
+            )
+            for row in affected:
+                cid = safe_int(row["customer_id"])
+                if cid is not None:
+                    self.notifier.notify_offer_cancelled_to_customer(
+                        cid, offer_id, safe_int(row["request_id"])
+                    )
+            db.commit()
         except HTTPException:
             db.rollback()
             raise

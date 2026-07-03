@@ -6,8 +6,8 @@
 תהיה אטומית יחד עם האירוע.
 
 אירועים (SPEC §11):
-  MATCH_FOUND       -> ללקוח: "נמצאה שארית/פנייה מתאימה"
-  CUSTOMER_ACCEPTED -> לקבלן: "לקוח אישר את הפנייה" + טלפון הלקוח
+  MATCH_FOUND       -> ללקוח: "נמצאה שארית/פניה מתאימה"
+  CUSTOMER_ACCEPTED -> לקבלן: "לקוח אישר את הפניה" + טלפון הלקוח
   OFFER_TAKEN       -> ללקוחות שהותאמו: "ההצעה כבר נתפסה"
 """
 
@@ -65,8 +65,8 @@ class NotificationService:
         phone = customer_phone or "לא זמין"
         return self.create_notification(
             user_id=contractor_id, user_role="contractor", type="CUSTOMER_ACCEPTED",
-            title="לקוח אישר את הפנייה",
-            body=f"לקוח אישר את הפנייה שלך. ליצירת קשר — טלפון: {phone}",
+            title="לקוח אישר את הפניה",
+            body=f"לקוח אישר את הפניה שלך. ליצירת קשר — טלפון: {phone}",
             related_offer_id=offer_id, related_request_id=request_id,
         )
 
@@ -75,5 +75,14 @@ class NotificationService:
             user_id=customer_id, user_role="customer", type="OFFER_TAKEN",
             title="ההצעה כבר נתפסה",
             body="לקוח אחר אישר את ההצעה לפניך. נודיע לך על שאריות מתאימות נוספות.",
+            related_offer_id=offer_id, related_request_id=request_id,
+        )
+
+    def notify_offer_cancelled_to_customer(self, customer_id: int, offer_id: int, request_id: int):
+        # FIX-3: כשקבלן מבטל פניה שהותאמה — מודיעים ללקוחות שהותאמו אליה.
+        return self.create_notification(
+            user_id=customer_id, user_role="customer", type="OFFER_CANCELLED",
+            title="הפניה בוטלה",
+            body="הקבלן ביטל את הפניה שהותאמה לבקשתך. נודיע לך על שאריות מתאימות נוספות.",
             related_offer_id=offer_id, related_request_id=request_id,
         )
